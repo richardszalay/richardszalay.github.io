@@ -21,4 +21,6 @@ gems:
 # Build settings
 markdown: kramdown
 
+permalink: /:year/:month/:day/:title
+
 excerpt_separator: ""
