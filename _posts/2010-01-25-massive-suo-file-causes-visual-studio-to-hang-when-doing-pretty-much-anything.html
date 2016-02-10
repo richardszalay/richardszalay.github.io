@@ -1,0 +1,25 @@
+---
+layout: post
+title: Massive SUO file causes Visual Studio to hang when doing pretty much anything
+date: 2010-01-25 10:44:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- Visual Studio.NET
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '17803152793365320'
+  _oembed_48802394ce7dc5d7588e5874054680d2: "{{unknown}}"
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I've been dealing with horribly slow performance from Visual Studio 2008 (SP1) for a few weeks now. We're talking seriously slow performance. Like 30-40 seconds of unresponsiveness to save the solution; 20-30 seconds of unresponsiveness after compilation if there were any errors.</p>
+<p>Today, after taking a few memory dumps to send to Microsoft, I set out to look for network references (an idea from a workmate). I didn't find any (nor did I expect to), but I did find a <strong>250MB</strong> (!) SUO (Solution User Options) file.</p>
+<p>I have no idea how the SUO file got so large, but deleting completly fixed the problem. Visual Studio has returned to it's usual speediness. I do regret, though, not making a copy of the SUO to send to Microsoft. Next time, perhaps.</p>

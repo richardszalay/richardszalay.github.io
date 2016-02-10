@@ -1,0 +1,53 @@
+---
+layout: post
+title: 'Building a Deployment Pipeline with MSDeploy: Part 5 – Publishing'
+date: 
+type: post
+published: false
+status: draft
+categories: []
+tags: []
+meta:
+  _edit_last: '6536909'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>In this part, we'll setup our publishing profiles so that we can deploy to our previously configured servers.</p>
+<h2>Creating a publish profile</h2>
+<p>Each environment that we want to deploy to requires a publish profile. Let's creating one for the "Stage" environment we configured in part 4:</p>
+<ol>
+<li>Right click on the project</li>
+<li>Click “Publish…”</li>
+<li>Select “&lt;New…&gt;” from the publish profile drop down, call it “Stage”</li>
+<li>Change the publish method to “Web Deploy”</li>
+<li>Set "Service URL" to "https://server:8172/msdeploy.axd"</li>
+<li>Set "Site/Application" to the name of the Website in IIS. If it's a virtual directory, use "Site Name/Virtual Directory"</li>
+<li>Enter the Username of the deployment user</li>
+<li>Leave everything else as-is</li>
+</ol>
+<p>Now, if we to publish using this profile with no further changes it would rebuild our project, ignoring the package from our "Package" profile.</p>
+<h2>A little something on the side</h2>
+<p>It's at this point that we need add some customisations to get our way. To avoid the rebuilding issue described above, I created the <a href="https://github.com/richardszalay/msdeploy-package-publish">msdeploy-package-publish</a> project which acts as an extension to the MSBuild targets in the Web Publishing Pipeline.</p>
+<p>With it, the number of artifacts required past the initial "build stage" is reduced to:</p>
+<ol>
+<li>The previously built package package</li>
+<li><span style="line-height:16px;">The "Community.Web.Publishing.Deploy.PackageDeploy.targets" targets file from msdeploy-package-publish</span></li>
+<li>The publish profiles (pubxml)</li>
+</ol>
+<p>How you manage these artifacts across build steps depends on your build server. Atlassian Bamboo, for example, supports shared artifacts across "Stages" (eg. Build, Deploy to Stage, Deploy to Live) of a "Plan".</p>
+<h2>Little Rocket Man</h2>
+<p>Since project file is no longer being checked out during the deployment stages, additional information needs to be passed to the PackageDeploy targets file.</p>
+<p>To deploy to the "Stage" publish profile:</p>
+<p>{code}<br />
+msbuild Community.Web.Publishing.Deploy.PackageDeploy.targets ^<br />
+/p:DeployOnPublish=true ^<br />
+/p:PackageFileName=&lt;path_of_the_package_zip&gt; ^<br />
+/p:PublishProfile=&lt;Path_to_pubxml_file&gt; ^<br />
+/p:Configuration=Release ^<br />
+/p:UseMsDeployExe=true ^<br />
+/p:Password=&lt;deploy_user_password&gt;<br />
+{code}</p>

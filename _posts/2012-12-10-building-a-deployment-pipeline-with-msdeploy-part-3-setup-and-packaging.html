@@ -1,0 +1,93 @@
+---
+layout: post
+title: 'Building a Deployment Pipeline with MSDeploy: Part 3 – Setup and Packaging'
+date: 2012-12-10 13:32:26.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- Deployment
+tags:
+- deployment-pipeline-series
+- msdeploy
+- web-publishing-pipeline
+meta:
+  _edit_last: '6536909'
+  _publicize_pending: '1'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I'm continuing my series on building a deployment pipeline. This post gets the ball rolling by creating the project and defining the first command in our deployment pipeline.</p>
+<h2>Software Requirements</h2>
+<p>To contnue with this series, you'll need one of two things:</p>
+<ul>
+<li>Visual Studio 2012</li>
+<li>Visual Studio 2010 with the <a href="https://www.windowsazure.com/en-us/develop/downloads/">Azure SDK 1.71+</a> (currently 1.8)</li>
+</ul>
+<h2>File New Project and File Structure</h2>
+<p>Create a new MVC project called "MvcApplication". Here's an overview of the structure and important files (some won't exist yet) for publishing:</p>
+<ul>
+<li>MvcApplication.sln</li>
+<li>MvcApplication/
+<ul>
+<li><strong>Properties.xml</strong></li>
+<li><strong>MvcApplication.wpp.targets</strong></li>
+<li>Properties/
+<ul>
+<li>PublishProfiles/
+<ul>
+<li><strong>Package.pubxml</strong></li>
+<li><strong>Stage.pubxml</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p>All the bold items are special in their naming convention, but we'll describe their purpose as we need them.</p>
+<h2>Packaging</h2>
+<p>While WPP still supports the "old way" of packaging (CreatePackageOnPublish=true), the "correct" way to do so is to define a "package" publish profile. To do that:</p>
+<ol>
+<li>Right click on the project</li>
+<li>Click "Publish..."</li>
+<li>Select "&lt;New...&gt;" from the publish profile drop down, call it "Package"</li>
+<li>Change the publish method to "Web Deploy Package"</li>
+<li>Create a new publish profile called "Package" with an action of "Package"</li>
+</ol>
+<p>You'll see that a new file, <em>Properties\PublishProfiles\Package.pubxml</em>, has been created. We'll just leave that alone for now to keep things simple, but we'll be returning here in a future post.</p>
+<p>Now we define the first command in our build pipeline:</p>
+<p>[sourcecode language="text"]<br />
+msbuild MvcApplication.sln /t:Build /p:DeployOnBuild=true;PublishProfile=Package;IsDesktopBuild=false<br />
+[/sourcecode]</p>
+<p>Now for some options:</p>
+<ul>
+<li>In Visual Studio 2012, you can change the target to "Publish" and remove "DeployOnBuild" (2010 only supports limited targets for sln files)</li>
+<li>PublishProfile can be a full path to a pubxml file. If not it will be found in "Properties\PublishProfiles\Package.pubxml"</li>
+</ul>
+<p>You also have a few choices about where the zip is generated:</p>
+<ul>
+<li>By default, the package will be created in <em>bin\_PublishedWebsites\MvcApplication_Package</em></li>
+<li>Defining "DefaultPackageOutputDir" to a directory that will contain MvcApplication.zip</li>
+<li>Defining "PackageFileName" to a full path to the target zip</li>
+<li>Remove "IsDesktopBuild" from the build command and it will revert to using the absolute package you entered when creating the publish profile ("DesktopBuildPackageLocation")</li>
+</ul>
+<h2>What's in the box!!?</h2>
+<p>Let's crack open MvcApplication.zip and see what we've created.</p>
+<h3>Manifest</h3>
+<p>The archive.xml file contains the list of providers that will be deployed with the application.</p>
+<p>What you'll probably see here is an <em>iisApp</em> provider (deploys content and creates an IIS "application" if the directory isn't one already), and two <em>setAcl</em> providers (one sets read permissions for the App Pool identity and the other for static file access - IUSR).</p>
+<p>This file isn't modifyable in it's current (in-zip) state, but understanding it means you can use it to diagnose issues in the future.</p>
+<h3>Parameters</h3>
+<p>The properties.xml file contains any deploy-time arguments and how they effect the deployment. In our scenario, WPP has generated two by convention:</p>
+<p>"IIS Web Application Name" is the name of the website (or website\virtdir) that we're going to deploy to. If you look carefully, you'll see that the replacement value will be used for both the <em>content</em> deployment and the <em>setAcl</em> provider.</p>
+<p>"ApplicationServices<em>-</em>Web.config Connection String" is the connection string value for <em>ApplicationServices</em> (one parameter will be generated per &lt;connectionStrings&gt; entry)</p>
+<h3>Content</h3>
+<p>If you navigate into "Content\C_C" and it's children, you'll see that the website content has been added into the package with the <em>full path intact</em>. There's also nothing you can do about this, so keep it in mind in case you write obsenities into your directory structures or something.</p>
+<p>It's important to note here, that the content complies with Visual Studio's "Items to deploy" in the "Package/Publish Web" tab of project properties. By default, this includes binary output and any files with a Build Action of "Content".</p>
+<h3>System Info</h3>
+<p>Finally, the <em>systemInfo.xml</em> file contains information on which .NET Framework versions and IIS components are installed on the source machine. I'm not 100% sure how this information is used, but I haven't needed to look at this file for any diagnostics so far.</p>

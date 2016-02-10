@@ -1,0 +1,28 @@
+---
+layout: post
+title: Debugging IIS 7 extensions in Windows 7
+date: 2009-08-27 07:07:00.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags:
+- iis
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '5857151091938053333'
+  _edit_last: '6536909'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I came across some curious behavior when trying to debug an IIS extension that I'm working on. When I went to select "InetMgr.exe" as the startup program, it wasn't there. I checked the folder using Windows Explorer and, sure enough, there it was. Even entering the path manually resulted in "The external program cannot be found".</p>
+<p>So, what was the problem? Well, as far as I can tell, it appears that because InetMgr.exe is an auto-elevated process it is only accessible to other auto-elevated processes. This is quite possibly a post RC solution to the <a href="http://www.istartedsomething.com/20090130/uac-security-flaw-windows-7-beta-proof/">flaw in UAC</a> found during the betas, though I'm just speculating.</p>
+<p>Luckily, with a bit of experimenting, I was able to find a solution. By enabling remote debugging ("Use remote machine") and setting the value to localhost, I was able to circumvent whatever was blocking the call. See the below screenshot for clarification.</p>
+<p style="text-align:center;"><img alt="" src="{{ site.baseurl }}/assets/iis-start-action-inetmgr.png?w=300" border="0" /><br />
+<strong>Debug settings for InetMgr.exe</strong></p>
+<p>I am now happily debugging my extension without hassles.</p>

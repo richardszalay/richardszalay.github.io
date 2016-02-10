@@ -1,0 +1,43 @@
+---
+layout: post
+title: 'MOSS 2007 WCM: Customising the output of field controls'
+date: 2006-10-17 06:26:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '116107133299113961'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I've been looking at SharePoint 2007 from a Web Content Management perspective, and the first thing I want to know is how do I customise the HTML output. When displayed to the end user, rendering is validating XHTML should not be made complicated.</p>
+<p>Customising the layouts doesn't always mean the default output is invalid, just that's not not what you want. Best example is a heading TextField - you want to surround it in<br />
+<h1></h1>
+<p>, but ONLY if it has content - empty tags not only look messy, they cause <a href="http://commontags.com/2006/05/26/ie7-still-duplicates-text/">rendering issues</a>.</p>
+<p>Having run into <a href="http://richardszalay.blogspot.com/2006/10/moss-2007-changing-default-welcome.html">several </a> <a href="http://richardszalay.blogspot.com/2006/10/moss-2007-background-colour-cannot-be.html">other </a> problems, I was determined to resolve this one.</p>
+<p>And I did, but unfortunately no single fix covers everything. One of the most important things I have discovered is that the major field controls, like RichLinkField and RichImageField, do NOT store structured data; it's just HTML. This means that you can't have access to the URL portion of the field.</p>
+<p>Below are the common field controls and a sample of modified output:</p>
+<h3><a href="http://msdn2.microsoft.com/en-us/library/ms473978.aspx">TextField</a>, <a href="http://msdn2.microsoft.com/en-us/library/ms574428.aspx">RichImageField</a> and <a href="http://msdn2.microsoft.com/en-us/library/microsoft.sharepoint.publishing.webcontrols.richlinkfield.aspx">RichLinkField</a></h3>
+{% highlight html %}
+<spwc:FieldValue runat="server" ControlMode="Display" />
+{% endhighlight %}
+<p>Note the use of the <a href="http://msdn2.microsoft.com/en-us/library/microsoft.sharepoint.publishing.webcontrols.editmodepanel.aspx">EditModePanel</a> to stop the inner FieldValue control from causing an exception when going into edit mode.</p>
+<h3><a href="http://msdn2.microsoft.com/en-us/library/microsoft.sharepoint.publishing.webcontrols.richhtmlfield.aspx">RichHtmlField</a></h3>
+<p>I currently have not figured out a way to template the output of the RichHtmlField. Should anyone else attempt this, I'll cover what I've tried/learned so far:</p>
+<ul>
+<li>RichHtmlField ignores the DisplayTemplate (and Template) property.</li>
+<li>The CustomTemplate property is ignored by most, if not all, field controls.</li>
+<li>Internally, RichHtmlField overrides the <a href="http://msdn2.microsoft.com/en-us/library/microsoft.sharepoint.webcontrols.basefieldcontrol.renderfieldfordisplay.aspx">RenderFieldForDisplay</a> method and renders the HTML out directly, which explains why it ignores the template properties.</li>
+<li>TextField throws an exception if assigned the FieldName of the RichHtmlField (even if the RichHtmlField is removed from the page).</li>
+<li>RichLinkField renders nothing - most likely because the regular expressions it uses to parse the HTML internally aren't matching anything. This also applies to RichImageField as it is a subclass of RichLinkField.</li>
+<li>FieldValue, like RichHtmlField, overrides the default rendering process itself - meaning that templates do not work with it.
+</li>
+</ul>

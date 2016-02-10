@@ -1,0 +1,61 @@
+---
+layout: post
+title: 'VS.NET 2003: MACRO - Cleanup temp web folder when closing'
+date: 2006-02-13 22:21:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '113986969244811761'
+  _oembed_de4ea70ec8b5a96578281b14376560dc: "{{unknown}}"
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>This problem has got to annoy at least someone as much as it annoys me:</p>
+<ol>
+<li>You close a Web project and open another than has a similar folder structure</li>
+<li>You attempt to create a folder that existed in the previous web project but not in the new one.</li>
+<li>Visual Studio tells you that the folder already exists</li>
+<li>You swear and delete everything in c:\Documents and Settings\[Username]\VSWebCache\[ComputerName]</li>
+<li>You close and open the project</li>
+<li>You create the folder</li>
+</ol>
+<p>To solve this annoying problem, I came up with an EnvironmentEvents macro a while back that cleans up the VSWebCache folder when you close a solution that contains a web project. To implement, paste the code below into a EnvironmentEvents macro module.</p>
+{% highlight vb %}
+    Private PerformCleanup As Boolean
+
+    Private Sub SolutionEvents_AfterClosing() Handles SolutionEvents.AfterClosing
+
+        If (PerformCleanup) Then
+            Dim psi As New ProcessStartInfo("cmd", "/C rmdir /Q /S ""%homedrive%%homepath%\VSWebCache\%computername%""")
+            psi.CreateNoWindow = True
+            System.Diagnostics.Process.Start(psi).WaitForExit()
+
+            psi = New ProcessStartInfo("cmd", "/C mkdir ""%homedrive%%homepath%\VSWebCache\%computername%""")
+            psi.CreateNoWindow = True
+            System.Diagnostics.Process.Start(psi).WaitForExit()
+        End If
+    End Sub
+
+    Private Sub SolutionEvents_BeforeClosing() Handles SolutionEvents.BeforeClosing
+        Dim isWebProject As Boolean = False
+
+        Dim prj As Project
+        For Each prj In DTE.Solution.Projects
+            If (prj.Properties.Item("ProjectType").Value = 1) Then
+                isWebProject = True
+                Exit For
+            End If
+        Next
+
+        PerformCleanup = isWebProject
+    End Sub
+{% endhighlight %}

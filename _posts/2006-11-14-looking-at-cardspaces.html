@@ -1,0 +1,28 @@
+---
+layout: post
+title: Looking at CardSpaces
+date: 2006-11-14 21:45:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- ".NET"
+- CardSpaces
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '7298401198766829395'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I've started looking at <a href="http://cardspace.netfx3.com/">CardSpaces</a>. It's pretty cool; it enables us to get rid of usernames/passwords without Microsoft owning your data (like passport). It's a completely open standard that anyone can implement, and there are already examples in PHP and other non-Microsoft languages/platforms.</p>
+<p>Basically an Identity Provider (eg. Google, Live ID, Commonwealth Bank, Government) can issue you a Card which claims a certain aspect of your identity. When a Relying Party (read: your website) needs to be sure of an aspect of the user's identity, they ask for a card. Specifically, a list of required and optional "claims" (firstname/lastname/date of birth/favourite colour) is supplied, as well as the "token format" (the format in which the claims should be serialised). The information card selector (CardSpaces on Windows) then filters valid cards and allows the user to select one.</p>
+<p>If the information is as simple as the user's surname, the site will accept a self-issued (user created) card with that information. If self-issued is not good enough, say for proving the user's age, the site may require a Managed Key. For example, a movie trailer rated MA or R can force you to supply a card that proves that you are over 15/18, which your government might supply to you when you reach that age.</p>
+<p>The claims are specified using fully qualified names (ie. with namespaces). Microsoft have a created a few already for the obvious items (like the ones above), but you DONT have to use them. If you create your own firstname claim, like http://schemas.richardszalay.com/identity/2006/firstname, any identity providers would need to know about it. This is really only recommended if your company/website is the identity provider as well as the relying party.</p>
+<p>Another case is a site can ask for your firstname/lastname/email address so that you can access the forums. If the card is self-issued, you are sent a confirmation email with a link to activate your email address. If the card is managed (like a Hotmail card), then this step is skipped because Hotmail is vouching for the valid email address. Cards re-validate with their Identity Provider when used, which means you can cancel a card and it will be unusable, just like a credit card.</p>
+<p>I have mucked around with the implementation side of a relying party a little and I'll post about it a bit later.</p>

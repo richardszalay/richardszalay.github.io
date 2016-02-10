@@ -1,0 +1,32 @@
+---
+layout: post
+title: 'MCMS: Enabling MCMS''s internal tracing'
+date: 2006-09-20 04:55:00.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '115872871829327164'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>When more complicated problems with MCMS arise, I was finding myself wishing I could enable tracing to MCMS rather than go to support to solve the problem. Eventually I ended up using <a href="http://www.aisto.com/roeder/dotnet/">Reflector</a> and finding the <a href="http://msdn2.microsoft.com/en-us/library/system.diagnostics.switch.aspx">Switches</a> MCMS uses internally. Being that none of these switches are documented anywhere else online, I thought I'd share the knowledge.</p>
+<p>There are 3 Switches in total:</p>
+<dl>
+<dt>CmsAuthTraceSwitch</dt>
+<dd>Trace messages related to authentication and authorization (I find myself using this one most often)</dd>
+<dt>CmsCacheTraceSwitch</dt>
+<dd>Trace messages related to node caching. Strangely enough, I have never enabled this one</dd>
+<dt>CmsGlobalTraceSwitch</dt>
+<dd>Trace messages related to everything else</dd>
+</dl>
+<p>Please note that these are all <a href="http://msdn2.microsoft.com/en-us/library/system.diagnostics.traceswitch.aspx">TraceSwitches </a> and therefore need a value attribute between "1" (just errors) and "4" (verbose)</p>
+<p>I hope this helps someone out there who is having trouble with MCMS</p>

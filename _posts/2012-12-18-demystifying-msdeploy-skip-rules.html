@@ -1,0 +1,186 @@
+---
+layout: post
+title: Demystifying MSDeploy skip rules
+date: 2012-12-18 09:03:45.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- Deployment
+tags:
+- msdeploy
+meta:
+  _edit_last: '6536909'
+  _publicize_pending: '1'
+  twitter_cards_summary_img_size: a:6:{i:0;i:212;i:1;i:125;i:2;i:3;i:3;s:24:"width="212"
+    height="125"";s:4:"bits";i:8;s:4:"mime";s:9:"image/png";}
+  _wpas_skip_facebook: '1'
+  _wpas_skip_google_plus: '1'
+  _wpas_skip_twitter: '1'
+  _wpas_skip_linkedin: '1'
+  _wpas_skip_tumblr: '1'
+  _wpas_skip_path: '1'
+  _oembed_89867e7fbca9185622b07250c3e059b6: "{{unknown}}"
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>Skip rules are a feature of MSDeploy that allow specific parts of a synchronisation to be, you guessed it, skipped. While a conceptually simple concept, there are subtleties in its options that have resulted in "bug reports" from a number of people (myself included) that were actually just misunderstandings of its design.</p>
+<p>The aim of this post is to demystify skip rules in hope of easing frustration and preventing accidental deletes in production environments.</p>
+<h2>Anatomy of a skip rule</h2>
+<p>The command line syntax of a skip rule is:</p>
+<pre>-skip:attribute1=value1[,attribute2=value2[.. ,attributeN=valueN]]</pre>
+<p>Attributes act as a <em>filter</em> to figure out what to skip. They can all be specified in a single skip, but the same attribute cannot be specified more than once.</p>
+<p>The main attributes are:</p>
+<ul>
+<li><strong>objectName</strong> is the provider being skipped (eg. dirPath)</li>
+<li><strong>absolutePath</strong> is a <em>regular expression</em> (don't forget to escape it!) of the provider path being skipped (eg. file system path for filePath/dirPath)</li>
+<li><strong>skipAction</strong> specified under what circumstances should the object be skipped (eg. Delete, Update)</li>
+</ul>
+<p>The other, less common, attributes are:</p>
+<ul>
+<li><strong>xPath</strong> is an XPath expression that locates the object within the provider hierarchy</li>
+<li><strong>attributes.<em>attributeName</em></strong> filters on an arbitrary provider attribute but cannot be used with skipAction</li>
+<li><strong>keyAttribute </strong>filters a regular expression against the providers "key attribute". Since the key attribute is "path" more often that not, you're unlikely to use it. It also cannot be used with skipAction.</li>
+</ul>
+<p>Now that we know <em>what</em> a skip rules are, let's take a look at how they work.</p>
+<h2>Skip rules and hierarchies</h2>
+<p>At its core, MSDeploy only supports synchronising a <em>single provider</em> from a source to a target, it's just that providers actually exist in hierarchy, each with a very specific purpose. For example, dirPath contains other dirPath and filePath providers, iisApp contains a contentPath and a createApp provider, and manifest/package/archiveDir all contain abitrary providers.</p>
+<p>During synchronisation, the metadata for source\target provider hierarchies from the source and target are loaded into memory and compared. Based on that comparison, items from the source are added, updated or deleted at the destination.</p>
+<p>The important thing to understand with regard to hierarchies is that <strong>delete rules on a child are only processed if the parent is not being deleted</strong>. So if you skip a file but it's containing directory doesn't exist on the source, the directory (and thus the file) will be deleted anyway.</p>
+<h2>Skip Actions</h2>
+<ul>
+<li><strong>Delete</strong> prevents the object being deleted from the destination (unless its parent is being deleted as mentioned above)</li>
+<li><strong>AddChild</strong> prevents the object from being added to the destination</li>
+<li><strong>Update</strong> prevents the destination object from being updated</li>
+</ul>
+<p>Omitting a skipAction entirely prevents the object's metadata from even being considered for comparison and is processed at a separate phase than skip directives with skip actions. While this may seem like skipAction=*, in reality it's almost never what you want. Since each provider in the hierarchy is responsible for it's own deletion, skipping a child without a skipAction will cause the parent to fail during a delete action. For example, deleting a dirPath with an omitted child filePath results in a "Directory is not empty" error because the child filePath was not there to handle it's deletion.</p>
+<h2>Examples</h2>
+<p>Let's see how this all fits together in a real life test. We're going to sync these two folders:</p>
+<table>
+<tbody>
+<tr>
+<td style="vertical-align:top;text-align:center;"><img class="alignnone size-medium wp-image-225" src="{{ site.baseurl }}/assets/msdeploy-skip-eg-source.png?w=212" alt="source" width="212" height="125" /></td>
+<td style="vertical-align:top;text-align:center;"><img class="alignnone size-full wp-image-224" src="{{ site.baseurl }}/assets/msdeploy-skip-eg-dest.png" alt="dest" width="212" height="71" /></td>
+</tr>
+<tr>
+<td style="text-align:center;">Source</td>
+<td style="text-align:center;">Destination</td>
+</tr>
+</tbody>
+</table>
+<p>Below are the results of the various operations options. I've added <strong>emphasis</strong> on the important bits, and <del>strikethrough</del> means I'm pointing out that the line is missing:</p>
+<table>
+<tbody>
+<tr>
+<th>Skip attributes</th>
+<th>Result</th>
+</tr>
+<tr>
+<td>None</td>
+<td>Info: Deleting file (App_Data\data.bin).<br />
+Info: Deleting directory (App_Data).<br />
+Info: Adding directory (bin).<br />
+Info: Adding file (bin\App.dll).<br />
+Info: Adding directory (Views).<br />
+Info: Adding directory (Views\Home).<br />
+Info: Adding file (Views\Home\Index.cshtml).<br />
+Info: Updating file (Web.config).</td>
+</tr>
+<tr>
+<td>objectName=filePath<br />
+absolutePath=data\.bin$</td>
+<td><strong>Info: Object filePath (App_Data\data.bin) skipped due to skip directive 'CommandLine<br />
+SkipDirective 1'.<br />
+Info: Deleting directory (App_Data).</strong><br />
+Info: Adding directory (bin).<br />
+Info: Adding file (bin\App.dll).<br />
+Info: Adding directory (Views).<br />
+Info: Adding directory (Views\Home).<br />
+Info: Adding file (Views\Home\Index.cshtml).<br />
+Info: Updating file (Web.config).<br />
+<strong style="color:#ff0000;">Error: An error was encountered when processing operation 'Delete Directory' on 'App_Data'.<br />
+Error: The directory is not empty</strong></td>
+</tr>
+<tr>
+<td>objectName=filePath<br />
+absolutePath=data\.bin$<br />
+skipAction=Delete</td>
+<td><strong>Info: Deleting file (App_Data\data.bin).<br />
+Info: Deleting directory (App_Data).</strong><br />
+Info: Adding directory (bin).<br />
+Info: Adding file (bin\App.dll).<br />
+Info: Adding directory (Views).<br />
+Info: Adding directory (Views\Home).<br />
+Info: Adding file (Views\Home\Index.cshtml).<br />
+Info: Updating file (Web.config).</td>
+</tr>
+<tr>
+<td>objectName=dirPath<br />
+absolutePath=App_Data$<br />
+skipAction=Delete</td>
+<td><del>Info: Deleting file (App_Data\data.bin).<br />
+Info: Deleting directory (App_Data).</del><br />
+Info: Adding directory (bin).<br />
+Info: Adding file (bin\App.dll).<br />
+Info: Adding directory (Views).<br />
+Info: Adding directory (Views\Home).<br />
+Info: Adding file (Views\Home\Index.cshtml).<br />
+Info: Updating file (Web.config).</td>
+</tr>
+<tr>
+<td>objectName=filePath<br />
+absolutePath=Index\.cshtml$</td>
+<td>Info: Deleting file (App_Data\data.bin).<br />
+Info: Deleting directory (App_Data).<br />
+Info: Adding directory (bin).<br />
+Info: Adding file (bin\App.dll).<br />
+Info: Adding directory (Views).<br />
+Info: Adding directory (Views\Home).<br />
+<strong>Info: Object filePath (Views\Home\Index.cshtml) skipped due to skip directive 'CommandLineSkipDirective 1'.</strong><br />
+Info: Updating file (Web.config).</td>
+</tr>
+<tr>
+<td>objectName=filePath<br />
+absolutePath=Index\.cshtml$<br />
+skipAction=AddChild</td>
+<td>Info: Deleting file (App_Data\data.bin).<br />
+Info: Deleting directory (App_Data).<br />
+Info: Adding directory (bin).<br />
+Info: Adding file (bin\App.dll).<br />
+Info: Adding directory (Views).<br />
+Info: Adding directory (Views\Home).<br />
+<del>Info: Adding file (Views\Home\Index.cshtml).</del><br />
+Info: Updating file (Web.config).</td>
+</tr>
+<tr>
+<td>objectName=filePath<br />
+absolutePath=Index\.cshtml$<br />
+<strong>skipAction=Update</strong></td>
+<td>Info: Deleting file (App_Data\data.bin).<br />
+Info: Deleting directory (App_Data).<br />
+Info: Adding directory (bin).<br />
+Info: Adding file (bin\App.dll).<br />
+Info: Adding directory (Views).<br />
+Info: Adding directory (Views\Home).<br />
+<strong>Info: Adding file (Views\Home\Index.cshtml).</strong><br />
+Info: Updating file (Web.config).</td>
+</tr>
+<tr>
+<td>objectName=filePath<br />
+absolutePath=Web\.config$<br />
+<strong>skipAction=Update</strong></td>
+<td>Info: Deleting file (App_Data\data.bin).<br />
+Info: Deleting directory (App_Data).<br />
+Info: Adding directory (bin).<br />
+Info: Adding file (bin\App.dll).<br />
+Info: Adding directory (Views).<br />
+Info: Adding directory (Views\Home).<br />
+Info: Adding file (Views\Home\Index.cshtml).<br />
+<del>Info: Updating file (Web.config).</del></td>
+</tr>
+</tbody>
+</table>

@@ -1,0 +1,31 @@
+---
+layout: post
+title: 'MCMS: Hidden Custom Properties Madness'
+date: 2005-06-28 01:57:00.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '111992587059023014'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>As I discovered today, there is an undocumented (or documented and damn well hidden) feature in <abbr title="Microsoft Content Management Server">MCMS</abbr> whereby custom properties that start with an underscore character become hidden.</p>
+<p>Now this would be a very good idea if it was hidden from the page properties dialog (which it does) but did not remain hidden in the MCMS Template Explorer in VS.NET, but unfortunately that is not the case. The only way to change the value is to check out the template, add the property again with its new value, and check in. Great. But what about removing it altogether? It appears that you cannot... and remain supported by Microsoft.</p>
+<p>The following (completely unsupported by me, Microsoft and the four horsemen of the apocolypse) block of <abbr title="Structured Query Language">SQL</abbr> removes a custom property ('_HiddenCustomPropertyName') from a template ('Some Template Name')</p>
+{% highlight sql %}
+DELETE NP FROM NodeProperty NP
+INNER JOIN Node N ON N.[Id] = NP.NodeId
+WHERE NP.PropName = '_HiddenCustomPropertyName' AND
+      N.[Type] = 65536 /* Template */ AND
+      N.[Name] = 'Some Template Name'
+{% endhighlight %}
+<p>Enjoy</p>

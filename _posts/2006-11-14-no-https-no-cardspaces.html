@@ -1,0 +1,26 @@
+---
+layout: post
+title: No HTTPS = No CardSpaces
+date: 2006-11-14 22:34:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '8193328264617293948'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>It was like I was back in my first days of programming more than 10 years ago; I tried to implement CardSpaces on a sample page and nothing would work like it should. I click a button and the form submits without loading the CardSpaces selector. I even copied the HTML from a <a href="https://www.identityblog.com/infocard-demo.php">working sample</a> into my own, and STILL no CardSpaces love.</p>
+<p>HTTPS...</p>
+<p>Yeah, without HTTPS the CardSpaces UI will not show at all. Honestly guys, would adding a "The CardSpaces internet explorer plugin could not initialize because the connection was not secured" message have been that hard?</p>
+<p>Even worse, my dodgy OpenSSL-generated certificate does not appear to be good enough:</p>
+<p><img src="{{ site.baseurl }}/assets/cardspaces-badcert.jpg" /></p>
+<p>Now, I <em>know</em> there is a debug mode for developing a relying party without having to buy an IIS cert for my development machine. There IS a debug mode, right Microsoft? RIGHT!?</p>

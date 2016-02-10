@@ -1,0 +1,62 @@
+---
+layout: post
+title: 'SQL: Joining on descendants in a hierarchy'
+date: 2006-05-11 05:16:00.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '114732541901813780'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I came up with a method of retrieving all descendants of a 'category' today by joining into a custom function, and I thought I'd share it online.</p>
+<p>Let's say your user can select up to 5 levels of categories in the search page, and you need to match all products that belong to any of the categories beneath that category. (I'm also going that we know that cursors are evil).</p>
+<p>The method I'm presenting allows you to join the results of a function instead of doing a 'categoryid=X' WHERE statement, like so:</p>
+{% highlight sql %}
+-- @CategoryId is a parameter for your query procedure
+
+SELECT P.ProductId, P.Name
+FROM Product P
+INNER JOIN ProductCategory PC ON PC.ProductId = P.ProductId
+INNER JOIN dbo.DescendantCategories(@CategoryId) CAT ON CAT.CategoryId = PC.CategoryId
+{% endhighlight %}
+<p>Now, let's have a look at the <em>DescendantCategories</em> function:</p>
+{% highlight sql %}
+CREATE FUNCTION dbo.DescendantCategories  
+(  
+ @CategoryId INTEGER /* Input Parameter */
+)  
+RETURNS @Output TABLE (CategoryId INTEGER) /* Return Table Definition */
+AS  
+BEGIN  
+  
+-- Ensure the given ID exists  
+INSERT @Output(CategoryId)   
+ SELECT CategoryId FROM Category WHERE CategoryId=@CategoryId  
+
+-- While items were inserted
+WHILE @@ROWCOUNT < 0  
+BEGIN
+ /* Add all children of categories already in the output table
+    to the output table (provided they are not in there already) */
+ INSERT @Output(CategoryId)
+  SELECT CAT.CategoryId FROM @Output C
+  INNER JOIN Category CAT ON CAT.ParentCategoryId = C.CategoryId
+  LEFT JOIN @Output DUP ON DUP.CategoryId = CAT.CategoryId  
+  WHERE DUP.CategoryId IS NULL /* Where its not in there already */
+END  
+  
+RETURN  
+  
+END  
+{% endhighlight %}
+<p>So there it is; I hope you find good use for it. It's very fast and it even will circumvent infinite loops that could occur with circular hierarchy references.</p>

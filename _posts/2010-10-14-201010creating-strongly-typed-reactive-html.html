@@ -1,0 +1,101 @@
+---
+layout: post
+title: Creating a strongly typed reactive wrapper to INotifyPropertyChanged
+date: 2010-10-14 12:42:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- ".NET"
+- Rx
+tags:
+- reactive-extensions
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '1297402275650953711'
+  _edit_last: '6536909'
+  _wp_old_slug: creating-a-strongly-typed-reactive-wrapper-to-inotifypropertychanged
+  _oembed_840386fdc663dcf6fcb005826e2d27c5: "{{unknown}}"
+  _oembed_c1f4f3f6d58b5fafd391588fdd19c1b9: "{{unknown}}"
+  _oembed_a4ccfd8257beda6d28f97c8f4c72f5f9: "{{unknown}}"
+  _oembed_6fbefe31ef3052d5c1eb8541a226ff9e: "{{unknown}}"
+  _oembed_e8802a2328a30ef88743fda17a6e692a: "{{unknown}}"
+  _oembed_e6b99ce47352fd029b4a34fea367a30d: "{{unknown}}"
+  _oembed_36038068c79847d726ab9dbcf9bc4d57: "{{unknown}}"
+  _oembed_c76116724f92b5c46f937500bd3d8a72: "{{unknown}}"
+  _oembed_91f927dfcb1972702d3517ca949519ef: "{{unknown}}"
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<h3>Practical Ugliness</h3>
+<p><code>INotifyPropertyChanged</code> is a great, built-in, way for property change notification to work in the WPF/Silverlight world. Attempting to use it from staticly typed code, however, gets messy:</p>
+{% highlight csharp %}
+SomeViewModel viewModel;
+
+viewModel.PropertyChanged += (s,e) =>
+{
+    if (e.PropertyName == "TheProperty")
+        GetToWork(viewModel.TheProperty);
+};
+{% endhighlight %}
+<p>Things get even worse when we try to make this reactive:</p>
+{% highlight csharp %}
+var propertyChangedEvents = Observable.FromEvent(
+    h => new PropertyChangedEventHandler(h),
+    h => viewModel.PropertyChanged += h,
+    h => viewModel.PropertyChanged -= h);
+
+propertyChangedEvents
+    .Where(x => x.PropertyName == "TheProperty")
+    .Select(x => viewModel.TheProperty)
+    .Subscribe(GetToWork);
+{% endhighlight %}
+<h3>An Expressive Solution</h3>
+<p>The extension method below allows you to specify the property you want to watch using an <code>Expression&lt;Func&gt;</code>, keeping things nice for the compiler:</p>
+<p><strong>Edit: Updated once it was tested (and simplified)</strong></p>
+{% highlight csharp %}
+public static class NotifyPropertyChangeReactiveExtensions
+{
+    // Returns the values of property (an Expression) as they change,
+    // starting with the current value
+    public static IObservable<TValue> GetPropertyValues<TSource, TValue>(
+        this TSource source, Expression<Func<TSource, TValue>> property)
+        where TSource : INotifyPropertyChanged
+    {
+        MemberExpression memberExpression = property.Body as MemberExpression;
+        if (memberExpression == null)
+        {
+            throw new ArgumentException(
+                "property must directly access a property of the source");
+        }
+        string propertyName = memberExpression.Member.Name;
+        Func<TSource, TValue> accessor = property.Compile();
+        return source.GetPropertyChangedEvents()
+            .Where(x => x.EventArgs.PropertyName == propertyName)
+            .Select(x => accessor(source))
+            .StartWith(accessor(source));
+    }
+    // This is a wrapper around FromEvent(PropertyChanged)
+    public static IObservable<IEvent<PropertyChangedEventArgs>>
+        GetPropertyChangedEvents(this INotifyPropertyChanged source)
+    {
+        return Observable.FromEvent<PropertyChangedEventHandler,
+            PropertyChangedEventArgs>(
+            h => new PropertyChangedEventHandler(h),
+            h => source.PropertyChanged += h,
+            h => source.PropertyChanged -= h);
+    }
+}
+{% endhighlight %}
+<p><code>GetPropertyValues</code> returns an <code>IObservable</code> of the values of the property as they change, starting with the current value.</p>
+<p>You can then use it like so:</p>
+{% highlight csharp %}
+viewModel.GetPropertyChangeValues(x => x.TheProperty)
+    .Subscribe(GetToWork);
+{% endhighlight %}
+<p>I hope this method can be as useful to you as it has been to me.</p>

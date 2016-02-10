@@ -1,0 +1,38 @@
+---
+layout: post
+title: Dealing with exceptions thrown in Application_Start()
+date: 2007-03-08 20:57:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- ASP.NET
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '4463458775267980540'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>One annoying problem I've noticed in the past is that if an exception is thrown in Application_Start() the application does not restart, resulting in subsequent requests going through to the application (aspx pages and other handlers) without the Application_Start() actions happening. This can be particularly annoying as the errors that result on the pages of the site do not tell you why Application_Start threw an exception to begin with.</p>
+<p>Luckily there is a simple solution, and it involves using <a href="http://msdn2.microsoft.com/en-us/library/system.web.httpruntime.unloadappdomain(VS.80).aspx">HttpRuntime.UnloadAppDomain</a>. If you call UnloadAppDomain the application will reset and the next request will start it up again, causing Application_Start to occur again. This will allow you diagnose the error that is occuring in Application_Start and thus let you fix the problem.</p>
+<p>Below is a sample Application_Start method:</p>
+{% highlight csharp %}
+void Application_Start(object sender, EventArgs e) 
+{
+ try
+ {
+  // Some important startup stuff that must happen
+ }
+ catch
+ {
+  HttpRuntime.UnloadAppDomain(); // Make sure we try to run Application_Start again next request
+  throw; // Rethrow whatever was caught
+ }
+}
+{% endhighlight %}

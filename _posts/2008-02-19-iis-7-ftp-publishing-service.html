@@ -1,0 +1,35 @@
+---
+layout: post
+title: IIS 7 FTP Publishing Service
+date: 2008-02-19 08:48:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- FTP
+- IIS7
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '2658984761631081714'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>The <a href="http://www.iis.net/downloads/default.aspx?tabid=34&amp;g=6&amp;i=1526">replacement</a> for the FTP service in IIS 7 is almost here, and it's looking better everyday.</p>
+<p>Although still only a release candidate (RC0), the new service supports a myriad of new features:</p>
+<ul>
+<li>FTP over SSL</li>
+<li>Membership Providers</li>
+<li>UTF8</li>
+<li>IPv6</li>
+<li>(Significantly better) User folder isolation</li>
+<li>Hostname support (ie. multiple sites on the same port)</li>
+</ul>
+<p>The FTP service can also be added as a module to a website, logically binding a website to its FTP site.</p>
+<p>In addition, FTP also brings the <a href="http://www.iis.net/articles/view.aspx/IIS7/Managing-IIS7/Using-FTP-Server-in-IIS7/Configure-IIS-Manager-Authentication?Page=2">IIS Managers Service</a> to the table. The IIS Managers Service is basically an IIS specific <a href="http://msdn2.microsoft.com/en-us/library/sx3h274z.aspx">membership provider</a> that allows creation of users with access to modify an IIS Website or upload to an FTP but without having a windows user counterpart (which means they can't log in to the machine.</p>
+<p>I for one am looking forward to the day when IIS7 is commonplace amongst hosting companies.</p>

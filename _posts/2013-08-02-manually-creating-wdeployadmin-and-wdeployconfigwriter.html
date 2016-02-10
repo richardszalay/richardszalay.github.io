@@ -1,0 +1,38 @@
+---
+layout: post
+title: Manually creating WDeployAdmin and WDeployConfigWriter
+date: 2013-08-02 11:36:20.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags:
+- msdeploy
+meta:
+  _edit_last: '6536909'
+  _publicize_pending: '1'
+  geo_public: '0'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I ran into a scenario recently whereby installing Web Deploy didn't create the <em>WDeployAdmin</em> and <em>WDeployConfigWriter</em> users. After attempting to uninstall/reinstall a few times, to no avail, I ended up configuring the users manually. Here's how I did it:</p>
+<ol>
+<li>Create local users <em>WDeployAdmin </em>and<em> WDeployConfigWriter</em>. Since you won't need the passwords after this process, I recommend using a complex password (like via  <a href="http://strongpasswordgenerator.com">strongpasswordgenerator.com</a>)</li>
+<li>Disable password expiration on both accounts to avoid issues in a few months time</li>
+<li>Add <em>WDeployAdmin</em> to the local Administrators group</li>
+<li>Open %windir%\system32\inetsrv\config in explorer and grant <i>WDeployConfigWriter</i> write permissions to it (ignore the permission denied error on config/schema)</li>
+<li>Open IIS and select "Management Service Delegation", which is at the server level (not on a site)</li>
+<li>For each item with <em>WDeploy*</em> in the User Name column:
+<ol>
+<li>Select the row and click "Edit" (or double click)</li>
+<li>Click "Set" next to "Identity"</li>
+<li>Re-enter whichever user was set as well as the password you generated earlier</li>
+<li>Click OK</li>
+</ol>
+</li>
+</ol>
+<p>Everything should be fine after that. If deploys are still failing, check out the "Web Deploy" event log.</p>

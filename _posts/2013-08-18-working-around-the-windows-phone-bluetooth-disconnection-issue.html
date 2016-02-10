@@ -1,0 +1,40 @@
+---
+layout: post
+title: Working around the Windows Phone Bluetooth disconnection issue (updated for
+  GDR2)
+date: 2013-08-18 18:49:45.000000000 +10:00
+type: post
+published: true
+status: publish
+categories:
+- windows-phone
+tags:
+- windows-phone
+meta:
+  _edit_last: '6536909'
+  geo_public: '0'
+  _publicize_pending: '1'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p><strong>Update:</strong> This post has been updated to include support for GDR2.</p>
+<p>There's an issue on Windows Phone (7 and 8) whereby disconnecting a Bluetooth headset will cause the current track to play through the loud speaker, <strong>even if the track was paused</strong>. Not many people talk about the issue because the number of audio apps represent a pretty small percentage of the marketplace and, sadly, those who <em>have</em> worked around it in the past attempt to use it as a marketing advantage rather than share the knowledge on the problem.</p>
+<p>For those who don't care how I solved it, feel free to jump directly to the <a href="https://gist.github.com/richardszalay/6260553">MIT licensed Gist</a></p>
+<p>Solving the problem requires some trickery, since there are no APIs to notify apps of the connected state of Bluetooth headsets. Even so, identifying the scenario is quite basic, with the <em>AudioPlayerAgent.OnUserAction</em> method being called three times in quick succession: <strong>Pause, Seek, Play</strong>. The only gotcha here is that each call is made on a different instance of the <em>AudioPlayer</em>, so any state needs to be static.</p>
+<p>It turns out identifying the issue is only half the problem. I actually tried several methods of stopping the play from occurring from directly within <em>OnUserAction</em>, including mapping the <em>Play</em> action to a <em>Pause</em> and even ignoring the action completely, but none of my attempts prevented the audio from playing.</p>
+<p>The solution, in the end, was to detect the issue in <em>OnUserAction</em> and then correct it in <em>OnPlayerStateChanged</em> by immediately calling <em>Pause</em>. This caused the audio to be heard very briefly, which could be worked around by temporarily setting the volume to 0 when the issue was detected.</p>
+<p>The implementation could be improved in the following ways, though whether it's worth doing I'll leave to you:</p>
+<ul>
+<li>The detection sequence could, in theory, be accidentally reproduced by user action and thus detection should be given a time limit. However, since I couldn't reproduce the sequence through seeking, I decided not to include it.</li>
+<li>The small, ~50ms, gap where the volume is set to 0 could be worked around by capturing the current position on detection and setting it after the pause in the workaround</li>
+</ul>
+<h3>Enter GDR2</h3>
+<p>When Microsoft released GDR2 (General Distribution Release 2, the second major update to WP8), it came with claims that they had fixed the Bluetooth issue. Unfortunately, all it did was break my workaround. The reason is that, now, the user actions aren't sent; only the PlayStateChanged sequence of  <strong>Paused, TrackReady</strong>. Unfortunately, the sample code that comes with a new "audio agent" (which remains in the Podcaster source, as I'm sure it does many other applications) automatically starts playing on <em>TrackReady</em>. I've updated the Gist, as well as the code below, to cater for this alternative sequence of events.</p>
+<p>Below is the (MIT licensed) source for the workaround, as well as a bare-bones AudioPlayer implementation that uses it. I recommend getting the code from the GitHub Gist as I might forget this post if I make any improvements.</p>
+{% gist richardszalay/6260553 wp-bluetooth-workaround.cs %}
+<p>Example usage:</p>
+{% gist richardszalay/6260553 wp-bluetooth-workaround-example.cs %}

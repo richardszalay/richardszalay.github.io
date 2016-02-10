@@ -1,0 +1,48 @@
+---
+layout: post
+title: Generics (Vector) in the AVM2
+date: 2009-02-11 08:08:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- avm2
+- flash10
+- vector
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '1634558190433491634'
+  _oembed_4fa2bf137e1b8af8a08ef2fb6e7025a2: "{{unknown}}"
+  _oembed_c9e87b5f5a4ff01e414430cb3a57c19a: "{{unknown}}"
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>So I finally got around to looking at vector's in the AVM2 yesterday (for asmock) after someone logged a bug and found that the Flash 10 features are not actually documented in the <a href="http://www.adobe.com/devnet/actionscript/articles/avm2overview.pdf">AVM2 Overview</a> document. Fortunately, after some digging around, I uncovered enough to implement support. Here's what I found:</p>
+<p>References to a typed generic type (Vector. as opposed to Vector.) are referenced by a new multiname kind (0x1D), which I call GenericName. GenericName has a format like so:</p>
+<pre>[Kind] [TypeDefinition] [ParamCount] [Param1] [Param2] [ParamN]</pre>
+<p>Where:<br />
+[TypeDefinition] is a U30 into the multiname table<br />
+[ParamCount] is a U8 (U30?) of how many parameters there are<br />
+[ParamX] is a U30 into the multiname table.</p>
+<p>Obviously generics are not generally supported yet, so ParamCount will always be 1 (for Vector.).</p>
+<p>The other interesting thing is how instances of the class are created. A new opcode was added in Flash 10 (0x53), which I will call MakeGenericType. MakeGenericType is declared with the following stack:</p>
+<pre>TypeDefinition, ParameterType1, ParameterTypeN -&gt; GenericType</pre>
+<p>It also has one parameter, a U8 (U30?) specifying how many parameters are on the stack. You will generally see MakeGenericType being used like this:</p>
+<pre>GetLex [TypeDefinitionMultiname]
+GetLex [ParameterTypeMultiname]
+MakeGeneric [ParamCount]
+Coerce [GenericNameMultiname]
+Construct [ConstructorParamCount]</pre>
+<p>So if you had the following...</p>
+<pre>GetLex __AS3__.vec::Vector
+GetLex int
+MakeGeneric 1
+Coerce __AS3__.vec::Vector.
+Construct 0</pre>
+<p>You would now have an instance of Vector.</p>

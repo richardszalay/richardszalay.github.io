@@ -1,0 +1,172 @@
+---
+layout: post
+title: Practical support for custom light/dark theme resources on Windows Phone 7
+date: 2011-06-11 10:22:53.000000000 +10:00
+type: post
+published: true
+status: publish
+categories:
+- windows-phone
+tags: []
+meta:
+  _edit_last: '6536909'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>Windows Phone 7's dark/light themes, which allow the user to choose between white-on-black or black-on-white, expose <a href="http://msdn.microsoft.com/en-us/library/ff769552(v=VS.92).aspx">default resource keys</a> for your application to consume. However, since this support doesn't extend to declaring your <em>own</em> light/dark resources, I thought I'd look into a practical solution.</p>
+<p>I had a few requirements for the implementation:</p>
+<ul>
+<li>It not should require user code to select between specific resources</li>
+<li>It should support standard resource dictionary files and not require specific naming</li>
+<li>It should not have a runtime performance penalty</li>
+<li>It should work in the Visual Studio "cider" designer</li>
+<li>It should work in Expression Blend</li>
+</ul>
+<p>The result is a solution that manages 4 (or 4.5, depending on how you look at it) of those 5, and involves a subclassed <code>ResourceDictionary</code></p>
+{% highlight csharp %}
+namespace ThemeManagement
+{
+    /// <summary>
+    /// Provides automatic selection of resources based on the current theme
+    /// </summary>
+    public class ThemeResourceDictionary : ResourceDictionary
+    {
+        private ResourceDictionary lightResources;
+        private ResourceDictionary darkResources;
+        /// <summary>
+        /// Gets or sets the <see cref="ResourceDictioary"/> to use when in the "light" theme
+        /// </summary>
+        public ResourceDictionary LightResources
+        {
+            get { return lightResources; }
+            set
+            {
+                lightResources = value;
+                if (!IsDarkTheme && value != null)
+                {
+                    MergedDictionaries.Add(value);
+                }
+            }
+        }
+        /// <summary>
+        /// Gets or sets the <see cref="ResourceDictioary"/> to use when in the "dark" theme
+        /// </summary>
+        public ResourceDictionary DarkResources
+        {
+            get { return darkResources; }
+            set
+            {
+                darkResources = value;
+                if (IsDarkTheme && value != null)
+                {
+                    MergedDictionaries.Add(value);
+                }
+            }
+        }
+        /// <summary>
+        /// Determines if the application is running in the dark theme
+        /// </summary>
+        private bool IsDarkTheme
+        {
+            get
+            {
+                if (IsDesignMode)
+                {
+                    return true;
+                }
+                else
+                {
+                    return (Visibility)Application.Current.Resources["PhoneDarkThemeVisibility"]
+                        == Visibility.Visible;
+                }
+            }
+        }
+        /// <summary>
+        /// Determines if the application is being run by a design tool
+        /// </summary>
+        private bool IsDesignMode
+        {
+            get
+            {
+                // VisualStudio sometimes returns false for DesignMode, DesignTool is our backup
+                return DesignerProperties.GetIsInDesignMode(this) ||
+                    DesignerProperties.IsInDesignTool;
+            }
+        }
+    }
+}
+{% endhighlight %}
+<p>To test it out, I will create a page that contains an <code>Image</code> wrapped in a <code>Border</code> with the intention of using resources for the ImageSource and BorderBrush, respectively:</p>
+{% highlight xml %}
+<Border BorderThickness="5" BorderBrush="{StaticResource ImageBorderBrush}">
+    <Image Source="{StaticResource ThemedImage}" />
+</Border>
+{% endhighlight %}
+<p>(Notice that it's still using <code>StaticResource</code>)</p>
+<p>Next, I created two resource dictionaries in <code>/Resources/Light.xaml</code> and <code>/Resources/Dark.xaml</code>, which looked like this:</p>
+{% highlight xml %}
+<!-- Light.xaml -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="ImageBorderBrush" Color="Red" />
+    <BitmapImage x:Key="ThemedImage"
+                 UriSource="/ThemeManagement;component/Content/ImageLight.png" />
+</ResourceDictionary>
+{% endhighlight %}
+<p>&nbsp;</p>
+{% highlight xml %}
+<!-- Dark.xaml -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="ImageBorderBrush" Color="Green" />
+    <BitmapImage x:Key="ThemedImage"
+                 UriSource="/ThemeManagement;component/Content/ImageDark.png" />
+</ResourceDictionary>
+{% endhighlight %}
+<p><em>NOTE: <strong>ThemeManagement</strong> is the name of the project</em></p>
+<p>Finally, I added the custom resource dictionary to the <code>App.xaml</code>:</p>
+{% highlight xml %}
+<Application.Resources>
+    <custom:ThemeResourceDictionary>
+        <custom:ThemeResourceDictionary.LightResources>
+            <ResourceDictionary Source="/ThemeManagement;component/Resources/Light.xaml" />
+        </custom:ThemeResourceDictionary.LightResources>
+        <custom:ThemeResourceDictionary.DarkResources>
+            <ResourceDictionary Source="/ThemeManagement;component/Resources/Dark.xaml" />
+        </custom:ThemeResourceDictionary.DarkResources>
+    </custom:ThemeResourceDictionary>
+</Application.Resources>
+{% endhighlight %}
+<p><em>NOTE: <strong>ThemeManagement</strong> is the name of the project</em></p>
+<p>Now we can take it for a test toast:</p>
+<ol>
+<li>Run the app</li>
+<li>Push the start button on the phone/emulator</li>
+<li>Go to Settings and change the theme to light</li>
+<li>Push Back a few times until you're in the app again</li>
+</ol>
+<p><strong>UPDATE:</strong> The above test will not work in Mango due to a <a href="http://stackoverflow.com/questions/7324476/is-there-a-bug-when-changing-themes-when-app-is-deactivated-and-reactivated-in-w">unfortunate side effect of multitasking</a>. The correct theme will be applied if the application is relaunched from Start.</p>
+<table>
+<tbody>
+<tr>
+<td><img src="{{ site.baseurl }}/assets/thememanagementdark.jpg" alt="" /></td>
+<td><img src="{{ site.baseurl }}/assets/thememanagementlight.jpg" alt="" /></td>
+</tr>
+<tr>
+<td><em>Dark Theme</em></td>
+<td><em>Light Theme</em></td>
+</tr>
+</tbody>
+</table>
+<p>We can also confirm that it works in Cider by switching to the design view:</p>
+<p><img src="{{ site.baseurl }}/assets/thememanagementcider.jpg" alt="" /></p>
+<p>However, since Cider cannot change themes, we can only see the dark theme.</p>
+<p><a name="limitations"></a></p>
+<h2>Limitations</h2>
+<p>Unfortunately, this solution does not work in Expression Blend. For some reason, Blend parses the Resource BAML (compiled XAML) itself and manually supports <code>Source</code> and <code>MergedDictionary</code> attributes. Because of this, the custom ResourceDictionary code never runs and we Blend can't find the resources and you'll receive a warning when the project is opened.</p>
+<p>The workaround is to select a theme file for design time resources (you can do so from the Blend warning dialog). I recommend choosing Light, since Cider forces us to use Dark. It is unfortunate that both themes can't be supported, though, as Blend is the one environment that supports swapping between them on the fly.</p>
+<p><img src="{{ site.baseurl }}/assets/thememanagementblendlight.jpg" /></p>

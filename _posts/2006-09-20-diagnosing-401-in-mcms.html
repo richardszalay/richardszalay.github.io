@@ -1,0 +1,29 @@
+---
+layout: post
+title: Diagnosing 401 in MCMS
+date: 2006-09-20 04:47:00.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '115872797391153163'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I recommend trying the following:</p>
+<ul>
+<li>(IIS6) Ensure the IIS_WPG group has access to your website root</li>
+<li>(IIS5) Ensure the anonymous user has access to your website root</li>
+<li>Disable MCMS on the site and access a page (might have to swap it to another one first)</li>
+<li><a href="http://support.microsoft.com/?id=215383">Ensure NTAuthenticationProviders is set to "NTLM"</a></li>
+<li>Ensure there are no invalid () users listed in Site Manager</li>
+<li>Add a <a href="http://msdn2.microsoft.com/en-us/library/system.diagnostics.traceswitch.aspx">TraceSwitch </a>named CmsAuthTraceSwitch with a value of "4" and a <a href="http://msdn2.microsoft.com/en-us/library/system.diagnostics.textwritertracelistener.aspx">TextWriterTraceListener </a>to output MCMS's inner thoughts</li>
+</ul>

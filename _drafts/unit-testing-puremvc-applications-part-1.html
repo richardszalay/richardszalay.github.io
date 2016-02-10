@@ -1,0 +1,162 @@
+---
+layout: post
+title: 'Unit Testing PureMVC Applications: Part 1'
+date: 
+type: post
+published: false
+status: draft
+categories:
+- actionscript
+- flex
+- flexunit
+- puremvc
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '8536542396124600963'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>Unit testing is starting to become more and more common in the Flex / ActionScript 3 world so I was surprised when I couldn't find any resources on unit testing PureMVC applications for the in-house Flex developers.</p>
+<p>Having not used the framework before, I thought I'd find a sample online and go throught he motions of adding tests to it. The sample I used was <a href="http://trac.puremvc.org/Demo_AS3_Flex_CafeTownsend">Cafe Townsend</a>, which I converted to multicore. The process usually find any code in a mediator constructor that requires access the facade and moving into the initializeNotifier method (after the super.initializeNotifier call).</p>
+<p>This article documents the modifications I had to make to the code to make it testable. To begin with, download the multicore Cafe Townsend.</p>
+<h2>Unit Testing Overview</h2>
+<p>There are many article on the internet on the why's and how's of unit testing, probably written by people much smarter than I, so I'm not going to go into too much detail on unit testing theory. I will, however, touch lightly on the subject.</p>
+<p>Unit tests are pieces of code that check that another piece of code is working as expected. For example, a unit test for MathUtil.add(a,b) might test that MathUtil.add(3,5) returns 8. While this asserts that the code functions correctly, this outcome is not actually the real benefit of unit testing.</p>
+<p>There are two goals that each unit test should aim for:</p>
+<ol>
+<li><strong>Test as little code as possible</strong> - this refers particularly to only testing the code of one class, but extends to executing as little code on the class being tested as required by the test scenario.</li>
+<li><strong>Only test code</strong> - this means that your code shouldn't be accessing files, network or databases. These tests can exist, but are called integration tests and should live in a separate project so they can be run independently of the unit tests.</li>
+</ol>
+<p>The two main benefits of unit testing are code design and maintenance. Unit testing benefits code design because to make your code testable it must be written in a modular fashion. The net result is classes that are more <a href="http://en.wikipedia.org/wiki/Cohesion_(computer_science)">cohesive</a> and have less coupling. Maintenance benefits from unit testing because the code can be modified by a completely new developer 6 months down the line with less danger of creating a new bug. Running the tests before committing the code changes will surface any code changes that break the expected functionality.</p>
+<h2>Frameworks</h2>
+<p>The unit tests for this article were created using <a href="http://opensource.adobe.com/wiki/display/flexunit/FlexUnit">FlexUnit 4 turnkey beta 2</a>, with <a href="http://asmock.sourceforge.net">ASMock</a> used for mocking (we'll get to that later).</p>
+<p>In FlexUnit, each test is written as a function that executes a piece of code and asserts the behavior. Tests are grouped into <strong>test cases</strong> (classes). Generally, but not always, there is one test case per class being tested. Test cases are then optionally grouped into <strong>test suites</strong> (also classes), which can be used to group functionality.</p>
+<p>On the surface, FlexUnit consists of a <strong>core</strong> that executes test suites/cases and outputs the results to <strong>listeners</strong>. Outside of automated build environments you will probably be using a user interface listener, which visually represents test outcomes using green/red for pass/fail. FlexUnit ships with an application MXML that can be used as a template when setting up new test projects.</p>
+<p><a href="http://blogs.digitalprimates.net/codeSlinger/index.cfm/2009/5/3/FlexUnit-4-in-360-seconds">FlexUnit 4 in 360 seconds</a> can provide more information on FlexUnit 4's features.</p>
+<h2>Setting Up The Project</h2>
+<p>First of all, we need to create a project that will host and run our unit tests.</p>
+<ol>
+<li>Add a new Flex project called "CafeTownsendTests"</li>
+<li>Add the CafeTownsend's src folder as a source path</li>
+<li>Add the CafeTownsend's libs folder as a library path</li>
+<li>Add the <a href="http://opensource.adobe.com/wiki/display/flexunit/Downloads">FlexUnit</a> and <a href="http://asmock.sourceforge.net/">ASMock</a> SWCs to the libs folder</li>
+</ol>
+<p>Next, we're going to setup our folder structure like this:</p>
+<pre>
+[src]/
+   orc/
+      puremvc/
+         as3/
+            demos/
+               flex/
+                  cafetownsend/<strong>
+                     tests/
+                        controller/
+                           ControllerSuite
+                           cases/
+                        model/
+                           ModelSuite
+                           cases/
+                        view/
+                           ViewSuite
+                           cases/</strong>
+</pre>
+<p>The controller, model and view folders all have a cases subfolder, which will contain one test case for each class we are testing. A suite class looks like this:</p>
+<pre class="brush: c#">	[Suite]
+	[RunWith("org.flexunit.runners.Suite")]
+	public class ModelSuite
+	{
+		public var user : UserTestCase;
+		public var userProxy : UserProxyTestCase;
+		
+		public var employee : EmployeeTestCase;
+		public var employeeProxy : EmployeeProxyTestCase;
+
+	}
+</pre>
+<p>You've probably noticed that we're not new'ing the test cases on the suite. This is not a bug; FlexUnit will use the type description of this class to find all the test cases to run.</p>
+<h2>Testing UserProxy</h2>
+<p>We'll start with the simplest class to test, UserProxy. UserProxy performs login checks against a hardcoded login and has no external dependencies (ie. it doesn't "new" any other classes). </p>
+<pre class="brush: c#">
+   public class UserProxyTestCase
+   {
+      private const VALID_USERNAME : String = "Flex"; 
+      private const VALID_PASSWORD : String = "PureMVC"; 
+      
+      private const INVALID_USERNAME : String = "xelF"; 
+      private const INVALID_PASSWORD : String = "CVMeruP";
+      
+      [Test]
+      public function validate_validDetails_returnsTrue() : void
+      {
+         var proxy : UserProxy = new UserProxy();
+         
+         var result : Boolean = proxy.validate(VALID_USERNAME, VALID_PASSWORD);
+         
+         Assert.assertTrue(result);
+      }
+   }
+</pre>
+<p>In the above example our test function, marked using [Test] metadata, executes validate with the correct username/password and asserts that the function returns true. We can add another test that checks that validate returns false when an invalid username/password is used and even check what happens when null is passed in as a value. It's a nice way of documenting these edge cases. For the sake of brevity I will not include the other tests in this article, but they can be seen in the </p>
+<p>The test naming convention I use here, <em>method</em>_<em>circumstance</em>_<em>outcome</em>, is not required but is a convention I personally like as it describes what the test does without having to read the code or, worse, add comments to each test.</p>
+<p><strong>Remember:</strong> FlexUnit can't find the test we just wrote automatically, it must be included in a suite which is added to the core in the main MXML.</p>
+<h2>Testing ModelPrepCommand</h2>
+<p>If you take a look at ModelPrepCommand, you'll see that there's not much code. There's a problem, though, since that code relies on the functionality of a different class. This dependence is called code coupling, and makes your testing life more difficult. </p>
+<p>Worse, the facade property accesses a singleton (or a "multiton" - a singleton hashtable - if you're using multicore). Singletons make your testing like extremeley difficult since the state of the singleton object is shared between all tests and therefore unreliable. Techniques like mocking allow us to more elegantly circumvent this issue, but for the sake of this class we will simply modify ApplicationFacade to support resetting itself. To do this, we'll add these methods to ApplicationFacade:</p>
+<pre class="brush: c#">
+/**
+* For testing
+*/ 
+public static function setInstance(key : String, value : IApplicationFacade) : void
+{
+   instanceMap[key] = value;
+}
+
+/**
+* For testing
+*/ 
+public static function removeInstance(key : String) : void
+{
+   Facade.removeCore(key);
+}
+</pre>
+<p>These changes allow us to both change, and remove, the multiton instance.</p>
+<p>Now onto the test case. At the beginning top of our ModelPrepCommandTestCase, we're going to put the following code:</p>
+<pre class="brush: c#">
+private static const MULTITON_KEY : String = "app";
+		
+[BeforeClass]
+public static function beforeClass() : void
+{
+   ApplicationFacade.removeInstance(MULTITON_KEY);
+   ApplicationFacade.getInstance(MULTITON_KEY);
+}
+</pre>
+<p>Marking a method with [Before] means that it will be executed before each test in this test case. In our "before" method, we remove the ApplicationFacade multiton instance (using our MULTITON_KEY constant) and then force ApplicationFacade to create a new instance by calling getInstance(). This method ensures that each test will be run with ApplicationFacade in its default state.</p>
+<p>Next, we'll test that ApplicationMediator registers EmployeeProxy when execute is called. Execute also registers another proxy, UserProxy, but we'll test that seperately. By testing different expectations seperately it's easier to know what has broken when things go wrong.</p>
+<pre class="brush: c#">
+[Test]
+public function execute_registersEmployeeProxy() : void
+{
+   var command : ModelPrepCommand = new ModelPrepCommand();
+   command.initializeNotifier(MULTITON_KEY);
+   command.execute(null);
+			
+   var facade : IFacade = ApplicationFacade.getInstance(MULTITON_KEY);
+			
+   var result : Boolean = facade.hasProxy(EmployeeProxy.NAME);
+			
+   Assert.assertTrue(result);
+}
+</pre>
+<p>Despite having a dependency on a singleton, we were able to test the method with minimal code changes.</p>
+<p>Unfortunately, it doesn't remain that easy.</p>
+<h2>Testing ViewPrepCommand</h2>
+<p>If you take a look at ViewPrepCommand.execute(), it may seem like we have a similar testing scenario to ModelPrepCommand. Look closer, though, and you'll see that it creates a new instance of ApplicationMediator, which then creates instances of EmployeeDetailMediator, EmployeeListMediator and EmployeeLoginMediator, all in the constructor. Looks like we'll have to do a little refactoring, but I'll leave that for part 2.</p>
+<p>In the time being download the code for part one or, alternatively, download the multicore converted code and add all the tests yourself.</p></p>

@@ -1,0 +1,43 @@
+---
+layout: post
+title: Declaring optional MSDeploy parameters using the Web Publishing Pipeline
+date: 2012-09-13 00:09:10.000000000 +10:00
+type: post
+published: true
+status: publish
+categories:
+- Deployment
+tags:
+- msdeploy
+- web-publishing-pipeline
+meta:
+  _edit_last: '6536909'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>Today's WPP vs MSDeploy issue is declaring parameters that need to be ignored at deployment time.</p>
+<p>Why would I want to declare a parameter, only to ignore it? I'm a big fan of continuous delivery, and one of it's tenants is to only create build artifacts once and deploy them to various environments (dev, uat, staging, live), as it guarantees that what you deploy is what you tested.</p>
+<p>MSDeploy actually provides two (subtlely different) ways of skipping a parameter. The <code>removeParam</code> argument can be used to remove the parameter definition for the current deployment. Alternatively, the parameter can be decorated with a <code>&lt;parameterValidation kind="AllowEmpty" /&gt;</code> element to allow parameter values of empty strings.</p>
+<p>Unfortunately, neither of these MSDeploy features are supported by the Web Publish Pipeline. </p>
+<p>The only workaround for <code>removeParam</code> is to perform your deployments using MSDeploy directly, since there's no way to specify custom command line arguments via the MSDeploy (or VsMsDeploy) tasks.</p>
+<p>Fortunately, there is a workaround for the <code>parameterValidation</code> method, which ended up being what I needed. I found the workaround after snooping through <code>Microsoft.Web.Publishing.targets</code> (in <code>%programfiles%\MSBuild\VisualStudio\v11.0\Web</code>), a wealth of obfuscated knowledge on WPP features that are not-so-documented.</p>
+<p>It turns out that WPP will actually load a <code>Parameters.xml</code> file (technically <code>$(ProjectParametersXMLFile)</code>) from the root of the web application and merge any parameters with those declared in WPP (including Project.wpp.targets) using <code>MSDeployDeclareParameters</code>. For example, the following Parameters.xml declares an optional text-replace parameter:</p>
+{% highlight xml %}
+<parameters>
+   <parameter name="ReplaceVariable"
+              description="Sample variable that allows empty values" defaultValue="">
+      <parameterValidation kind="AllowEmpty" />
+      <parameterEntry type="TextFile" scope="Web\.config$" match="TextToReplace" />
+    </parameter>
+</parameters>
+{% endhighlight %}
+<p>You can now deploy the application while specifying an empty parameter value for <code>ReplaceVariable</code></p>
+<p>External links:</p>
+<ul>
+<li><a href="http://technet.microsoft.com/en-us/library/dd569089(v=ws.10).aspx">Web Deploy Operation Settings</a></li>
+<li><a href="http://technet.microsoft.com/en-us/library/dd569084(v=ws.10).aspx">Using declareParam and setParam</a></li>
+</ul>

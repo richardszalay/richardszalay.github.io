@@ -1,0 +1,33 @@
+---
+layout: post
+title: 'MOSS 2007: Changing the default Welcome page of a site'
+date: 2006-10-16 00:45:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '116095970805982904'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I recently <a href="http://forums.microsoft.com/TechNet/ShowPost.aspx?PostID=818738&amp;SiteID=17">posted</a> on the <abbr title="Microsoft Office SharePoint Server">MOSS</abbr> <a href="http://forums.microsoft.com/TechNet/ShowForum.aspx?ForumID=545&amp;SiteID=17">TechNet Forums</a> on how I might change the default (WelcomeLinks.aspx layout) to something else.</p>
+<p>A few more days of mucking around led me to the answer. Turns out the idea is that you save a template based on a site (remember: site = channel/web-folder, site collection = root channel/website) - which I had <a href="http://msmvps.com/blogs/shane/archive/2006/07/29/106170.aspx">located previously</a> (thanks Shane) - but I hadn't figured out how to create a new site from that template. Newly created templates are not automatically added into the list of site templates that can be used, and need to be added manually before they appear in the site template list.</p>
+<p>Below are the steps that I posted on TechNet forums to create a new site template:</p>
+<ol>
+<li>Create a site</li>
+<li>Change the welcome template to the template you want to use.</li>
+<li>Configure the page-layouts and site templates you want it to access.</li>
+<li>Save the template (/site_name/_layouts/savetmpl.aspx) - remember to check the "save content" checkbox to save the default page.</li>
+<li>Go to settings of "section root" site of this site template (ie. you want child-sites of this site to use the newly created site template)</li>
+<li>Look and Feel &gt; Page Layouts and Templates &gt; Subsites can only use the following site templates</li>
+<li>Add the site template that you just created and, if you want, remove the default one.</li>
+</ol>
+<p>Now if only someone could help me with my <a href="http://www.microsoft.com/communities/newsgroups/en-us/default.aspx?dg=microsoft.public.sharepoint.design_and_customization&amp;tid=c8897494-aa75-4773-9180-e63cb0e5fd44&amp;lang=en&amp;cr=US&amp;p=1">other</a>  <a href="http://www.microsoft.com/communities/newsgroups/en-us/default.aspx?dg=microsoft.public.sharepoint.design_and_customization&amp;tid=f7135244-971d-43a7-990b-5596a0ad695c&amp;lang=en&amp;cr=US&amp;p=1">queries</a>, I'll be happy for now.</p>

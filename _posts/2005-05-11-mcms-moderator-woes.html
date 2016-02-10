@@ -1,0 +1,25 @@
+---
+layout: post
+title: MCMS Moderator Woes
+date: 2005-05-11 22:18:00.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '111585082221169230'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I work on multiple <a href="http://www.microsoft.com/cmserver/"><abbr title="Microsoft Content Management Server">MCMS</abbr></a> sites at the same time. Some are just me playing around, some are just test sites, some production. I use the Database Configuration Application (DCA) to switch databases over.</p>
+<p>Yesterday I had an issue with Postings disappearing and, frankly, it was driving me nuts. Even more curious is that they turned up in the Site Manager, but not in my navigation control (quasi-tree  based navigation for logged on cms users); nor would they turn up if their URL was typed in directly.</p>
+<p>After some snooping around (using <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/MCMSSDK02/html/M_Microsoft_ContentManagement_Publishing_Searches_GetByPath_1_16219e3a.asp">CmsContext.Searches.GetByPath</a> - which found it when in edit mode, but not live mode) and looking at groups-google, I discovered the issue was moderators. When something is approved by an editor, and there are moderators in the system, the LIVE page gets ripped down until the moderator approves it. "WTF" indeed. Looks like I won't be using moderators (not that I have).</p>
+<p>To further complicate the situation, the site I was experience the 'deleting postings' in did not have any moderators. However, by this stage I felt much more inline with what was going on and guessed the reason. Luckily, I guessed correctly. Using the DCA to swap MCMS databases does not clear the system's cache; and security settings are included in what is cached. A quick visit to the Server Configuration Application (SCA) -&gt; Cache -&gt; Clear Memory Cache, and all was well and good.</p>
+<p>Thus ends the case of the missing postings.</p>

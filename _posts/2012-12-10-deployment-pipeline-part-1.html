@@ -1,0 +1,39 @@
+---
+layout: post
+title: 'Building a Deployment Pipeline with MSDeploy: Part 1 - Introduction'
+date: 2012-12-10 13:26:39.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- Deployment
+tags:
+- deployment-pipeline-series
+- msdeploy
+- web-publishing-pipeline
+meta:
+  _edit_last: '6536909'
+  _publicize_pending: '1'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>In this series of posts, I'll be walking through how to create a deployment pipeline using MSDeploy and the Web Publishing Pipeline.</p>
+<h2>What is a Deployment Pipeline?</h2>
+<p>A Deployment Pipeline is one of the tenants of Continuous Delivery, the practice of always being <em>able</em> to release new software (but not necessarily actually doing it). In a Deployment Pipeline, a single package is created at the end of the <em>build/test</em> job and deployed to each environment, (possibly) all the way up into production. And then we start again for the next release.</p>
+<p>It's important that the package be the same so that the "thing you deploy is the thing you tested".</p>
+<p>If you'd like you learn more, Jez Humble and David Farley quite literally wrote <a href="http://amzn.com/0321601912">the book on Continuous Delivery</a>, which I cannot recommend enough.</p>
+<h2>Series Goals</h2>
+<p>This series aims for a deployment pipeline the following attributes:</p>
+<ul>
+<li>Code is only retrieved from source control once</li>
+<li>Code is only compiled once</li>
+<li>Deployment operations are performed by non-administrator users</li>
+<li>Deployment user credentials are not stored in source control or CI configuration</li>
+<li>Per-environment configuration can be stored in the solution or supplied at runtime</li>
+</ul>
+<h2>Databases</h2>
+<p>Due to the complexity of deploying database, I've decided to leave them out of this series. However, since it's an important topic you can be sure it will be brought up in a future article.</p>

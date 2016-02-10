@@ -1,0 +1,70 @@
+---
+layout: post
+title: 'Building a Deployment Pipeline with MSDeploy: Part 2 – Terminology Primer'
+date: 2012-12-10 13:29:34.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- Deployment
+tags:
+- deployment-pipeline-series
+- msdeploy
+- web-publishing-pipeline
+meta:
+  _edit_last: '6536909'
+  _publicize_pending: '1'
+  _wpas_skip_facebook: '1'
+  _wpas_skip_google_plus: '1'
+  _wpas_skip_twitter: '1'
+  _wpas_skip_linkedin: '1'
+  _wpas_skip_tumblr: '1'
+  _wpas_skip_path: '1'
+  _oembed_da528655681161bf17c6cf53fa7e40e0: "{{unknown}}"
+  _oembed_48fbef441ea0bf6b267b374bdc9ab9eb: "{{unknown}}"
+  _oembed_aa087581166b4d396f6fc2f718444bca: "{{unknown}}"
+  _oembed_d94821c21ecbc31772ebd295c445fc91: "{{unknown}}"
+  _oembed_930d884b192424b2e19fe3f24de9ef1d: "{{unknown}}"
+  _oembed_34cb6a133ec24f0e1eb21edf018a4a94: "{{unknown}}"
+  _oembed_7c0462289893b94b73d1b6a0ec3d7a3f: "{{unknown}}"
+  _oembed_4207d0e2d89b7dc80f8d8665b6ab457b: "{{unknown}}"
+  _oembed_d664700d62623bf0799735cd48990295: "{{unknown}}"
+  _oembed_a847a859ba567689a9d559ff84b52e32: "{{unknown}}"
+  _oembed_9ac98f04e21491d235c783900c15dbb5: "{{unknown}}"
+  _oembed_dfd5f08f7b4174c57590cdb06dfa4ccf: "{{unknown}}"
+  _oembed_f7eae1e88d97e67e552b016de97149ca: "{{unknown}}"
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I'm continuing my series on building a deployment pipeline. This post clears up some terminology and defines the basic concepts.</p>
+<h2>MSDeploy</h2>
+<p>Officially called <strong>Web Deploy</strong>, <strong>MSDeploy</strong> is a technology for primarily deploying web applications and their dependencies, though you could use it to deploy almost anything. Currently in it's third version, it's distributed as an API with an accompanying command line tool, but only the latter of which will be covered in this series.</p>
+<p>MSDeploy defines the following concepts:</p>
+<ul>
+<li><strong><strong>Providers</strong></strong> deploy certain types of <em>objects</em>, be it a website, a database or a directory.</li>
+<li><strong>Verbs</strong> indicate which operation should be performed on the <em>source</em> and<em> dest</em> providers. Usually "sync", though "delete" and "dump" can be useful.</li>
+<li><strong>Parameters</strong> define what aspects of a deployment can be changed and can perform anything from web.config modifications to changing the name of the website being deployed to.</li>
+<li><strong>Rules</strong> modify how providers deploy, typically dealing with specific scenarios. Examples include disabling deletes and preventing "harmful" deletes.</li>
+<li><strong>Link Extensions</strong> (also called <strong>Links</strong>) enable or disable whether certain objects are included with their associated providers. Examples include application pools, certificates, and files.</li>
+<li><strong>Skip Rules<sup>1</sup> </strong>allow specific deployment objects (or only specific actions to a deployment object) to be excluded from the deployment.</li>
+<li><strong>Replace Rules</strong><sup>1</sup> modify aspects of any deployment object (except file contents).</li>
+</ul>
+<p><sup>1</sup> Technically Skip and Replace are implemented as rules, but the command line syntax is different so it's easier to consider them separate.</p>
+<h2>Web Publishing Pipeline</h2>
+<p>The <strong>Web Publishing Pipeline</strong> (hereafter be referred to as <strong>WPP</strong>) is a set of MSBuild targets that Visual Studio 2010/12 uses to integrate it's "Publish" process with MSDeploy (among other things).</p>
+<p>WPP's integration with MSBuild and Visual Studio provide a number of perks:</p>
+<ul>
+<li><strong>Publish Profiles</strong> are MSBuild files with a <em>pubxml</em> extension and contain all the settings required to deploy to a specific environment.</li>
+<li>MSBuild's "convention over configuration" is brought to the packaging and deployment process</li>
+</ul>
+<p>There are some downsides, though:</p>
+<ul>
+<li>Extending the deployment process requires both an understanding of the base MSDeploy feature <em>and</em> how to get to it via WPP.</li>
+<li>WPP doesn't support all the features of MSDeploy (specifically certain command line options).</li>
+<li>It's primarily been designed around "One Click Publishing" via the Visual Studio IDE</li>
+</ul>
+<p>Still, this deployment pipeline makes use of WPP, simply because Publish Profiles are much more convenient for managing target environments and less jarring for developers new to the technology.</p>

@@ -1,0 +1,43 @@
+---
+layout: post
+title: Configuring Fiddler to compress requests
+date: 2012-12-11 11:32:43.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- Debugging
+tags: []
+meta:
+  _publicize_pending: '1'
+  _edit_last: '6536909'
+  _wp_old_slug: using-fiddler-to-compress-requests
+  _oembed_7a28ba2aa5a68303a2dda188b759d7d8: "{{unknown}}"
+  _oembed_a2f6da34e8de68dc494952ec1efd8caa: "{{unknown}}"
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>Applying Content-Encoding headers to a request is tricky subject. While it's part of the HTTP specification, there's no way to determine if a server supports it ahead of time since no communication occurs before a request. Still if the server/client are controlled, request encoding can come in handy for certain scenarios. One such scenario that's becoming more common is uploading log data from a mobile application.</p>
+<p>If you use <a href="http://www.fiddler2.com/">Fiddler</a> to debug your HTTP, you might have spotted that there's no way to compress the request body. Fortunately, since Fiddler is so extensible, adding support is easy.</p>
+<p>First up, open the CustomRules script by selecting "Customize Rules..." from the Edit menu (or by pressing CTRL+R).</p>
+<p>Now paste the following code just before the lines adding RulesStringValue entries for each browser (around Line 50 of an uncustomised script):</p>
+{% highlight js %}
+// Request GZip encoding<br />
+public static RulesOption("Apply GZIP Encoding to Request")
+var m_gzipRequest: boolean = false;
+{% endhighlight %}
+<p>Next, paste the following code at the end of OnBeforeRequest(), right after the "if (m_AlwaysFresh &amp;&amp; ...)" block (around Line 210):</p>
+{% highlight js %}
+if (m_gzipRequest && oSession.requestBodyBytes != null &&
+    oSession.requestBodyBytes.length > 0 && !oSession.oRequest.headers["Content-Encoding"])
+{
+    oSession.requestBodyBytes = Utilities.GzipCompress(oSession.requestBodyBytes);
+    oSession.oRequest.headers["Content-Length"] = oSession.requestBodyBytes.Length.ToString();
+    oSession.oRequest.headers["Content-Encoding"] = "gzip";
+}
+{% endhighlight %}
+<p>Now whenever you want request bodies to be compressed, check "Apply GZIP Encoding to Request" from the Rules menu. Don't forget to turn it off again!</p>

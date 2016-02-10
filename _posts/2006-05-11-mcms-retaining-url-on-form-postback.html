@@ -1,0 +1,236 @@
+---
+layout: post
+title: 'MCMS: Retaining URL on form postback'
+date: 2006-05-11 00:11:00.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '113987285543844401'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>One major problem with <abbr title="Microsoft Content Management Server">MCMS</abbr> is that it tends to use javascript to modify the action attribute of the form. While this works in <abbr title="Internet Explorer">IE</abbr> with Javascript on, it doens't help anyone else.</p>
+<p>To solve this I extended the HtmlForm class to modify the attribute on the way out (but still preserve any other attribute it adds). This had to be done as <a href="http://msdn.microsoft.com/library/en-us/cpref/html/frlrfsystemwebuihtmlcontrolshtmlformclasstopic.asp?frame=true">HtmlForm</a> actually removes 'action' from the attributes list and adds its own. The finished product is shown below.</p>
+<p>Edit (2006-09-22): Changed the base class of ConsoleEx from CmsConsole (an import alias) to Microsoft.ContentManagement.WebControls.ConsoleControls.Console</p>
+{% highlight csharp %}
+public class CmsForm : HtmlForm
+{
+ public CmsForm()
+ {
+ }
+
+ // Overriding the placement of attributes to put our own 'action' in
+ protected override void RenderAttributes(HtmlTextWriter writer)
+ {
+  StringWriter sw = new StringWriter();
+
+  // Render attributes to a buffer
+  HtmlTextWriter htw = new HtmlTextWriter(sw);
+  base.RenderAttributes( htw );
+  string attributes =  sw.ToString();
+  int actionIndex = attributes.IndexOf("action=");
+
+  // Find the rendered action attribute and remove it
+  int endActionIndex = attributes.IndexOf("\"", actionIndex + "action=".Length + 1);
+  if (actionIndex!=0) writer.Write( attributes.Substring(0, actionIndex) );
+
+
+  // Add all base attributes (exception action)
+  writer.Write( attributes.Substring(endActionIndex+1) );
+
+  // Add our custom action
+  writer.WriteAttribute("action", this.GetActionAttribute(), true);
+ }
+
+ // Return the custom action attribute
+ private string GetActionAttribute()
+ {
+  try
+  {
+   CmsHttpContext cmsContext = CmsHttpContext.Current;
+
+   // If we are in published mode, return the current posting's path
+   if (cmsContext.Mode==PublishingMode.Published &amp;&amp; cmsContext.Posting!=null)
+   {
+    // Get the querystring without NR (CMS) items
+    string publishedQueryString = this.GetQueryString();
+
+    return (publishedQueryString.Length!=0)
+     ? cmsContext.Posting.Url + "?" + publishedQueryString
+     : cmsContext.Posting.Url;
+   }
+  }
+  catch(CmsAccessDeniedException)
+  {
+  }
+
+  string scriptPath = Context.Request.FilePath;
+  string queryString = Context.Request.Url.Query.TrimStart('?');
+
+  return (queryString.Length!=0)
+   ? scriptPath + "?" + queryString
+   : scriptPath;
+ }
+
+ // Retrieves the querystring without CMS items (start with NR)
+ private string GetQueryString()
+ {
+  StringBuilder sb = new StringBuilder();
+
+  foreach(string key in Context.Request.QueryString.Keys)
+   if (!key.StartsWith("NR"))
+    sb.AppendFormat("{0}={1}&amp;", key, Context.Request.QueryString[key]);
+
+  return (sb.Length==0)
+   ? String.Empty
+   : sb.ToString(0, sb.Length-1);
+ }
+}
+{% endhighlight %}
+
+<p>Enter problem #2. Seems the <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/MCMSSDK02/html/T_Microsoft_ContentManagement_WebControls_ConsoleControls_Console.asp">Console</a> does not do the preferred <var>var <a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/csref/html/vclrfispg.asp">is </a> TypeName</var> method of checking types, but goes all out to <var>var.<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/cpref/html/frlrfsystemobjectclassgettypetopic.asp">GetType()</a>==<a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/csref/html/vclrftypeofpg.asp">typeof</a>(HtmlForm)</var>. This prevents subclasses of HtmlForm from being used. The only way around this, unfortunately, is to subclass the Console class and perform the check properly (and re-implement any private methods needed). So, with a little help from <a href="http://www.aisto.com/roeder/dotnet/">Reflector</a>, we have:</p>
+
+{% highlight csharp %}
+public class ConsoleEx : Microsoft.ContentManagement.WebControls.ConsoleControls.Console
+{
+ private HtmlForm _webForm;
+
+ public ConsoleEx()
+ {
+ }
+
+ protected override void OnInit(EventArgs e)
+ {
+  try
+  {
+   // Attempt normal functionality
+   base.OnInit(e);
+  }
+  catch(WebAuthorException)
+  {
+   // Peform custom setting of form
+   this.SetPageForm();
+  }
+ }
+
+ protected override void OnLoad(EventArgs e)
+ {
+  if (_webForm==null)
+  {
+   base.OnLoad(e);
+  }
+  else
+  {
+   this.RegisterMandatoryScript();
+   if (CmsHttpContext.Current.UserCanModifySite)
+   {
+    this.RegisterUserCanModifySiteScript();
+    if ((WebAuthorContext.Current.Mode == WebAuthorContextMode.AuthoringNew) || (WebAuthorContext.Current.Mode == WebAuthorContextMode.AuthoringReedit))
+    {
+     this.RegisterAuthoringScript();
+    }
+   }
+  }
+ }
+
+ private void SetPageForm()
+ {
+  for (Control control1 = this.Parent; control1 != null; control1 = control1.Parent)
+  {
+   // Allows for subclassed HtmlForm's
+   if (control1 is HtmlForm)
+   {
+    this._webForm = (HtmlForm) control1;
+    return;
+   }
+  }
+  throw new WebAuthorException("The Console control must be embedded within the ASPX Web Form.");
+ }
+
+ // "Borrowed" from original implementation
+ private void RegisterAuthoringScript()
+ {
+  if (this.CmsPageFrame)
+  {
+   if (this.EnableLeaveAuthoringWarning)
+   {
+    this.Page.RegisterStartupScript("OverrideASPXPostback", "\n<!-- Generated by Microsoft.ContentManagement.WebControls.Console -->\n\n<!--\n   var __consoleCachedOriginalPostBack;\n    if( typeof window.__doPostBack != \"undefined\" )\n    {\n        __consoleCachedOriginalPostBack = __doPostBack;\n        __doPostBack = __consoleCustomDoPostBack;\n    }\n\n    var __consoleCachedOriginalOnSubmit = null;\n    if( typeof __CMS_PostbackForm.onsubmit != \"undefined\" )\n    {\n        __consoleCachedOriginalOnSubmit = __CMS_PostbackForm.onsubmit;\n        __CMS_PostbackForm.onsubmit = __consoleHandleOnSubmit;\n    }\n\n    function __consoleCustomDoPostBack( eventTarget, eventArgument )\n    {\n        WBC_offWarningBeforeLeave();\n        __consoleCachedOriginalPostBack( eventTarget, eventArgument );\n    }\n\n    function __consoleHandleOnSubmit()\n    {\n        WBC_offWarningBeforeLeave();\n        if (__consoleCachedOriginalOnSubmit != null)\n            return __consoleCachedOriginalOnSubmit();\n        else\n            return true;\n    }\n// -->\n\n\n\n");
+   }
+   else
+   {
+    this.Page.RegisterStartupScript("TurnOffLeaveAuthoringDialog", "\n<!-- Generated by Microsoft.ContentManagement.WebControls.Console class -->\n\n<!--\n   WBC_offWarningBeforeLeave();\n// -->\n\n\n\n");
+   }
+  }
+ }
+
+ // "Borrowed" from original implementation
+ private void RegisterMandatoryScript()
+ {
+  new Uri(this.Page.Request.Url.AbsoluteUri);
+  string text1 = JavaScriptEncode( this.Page.Request.Url.PathAndQuery );
+  string[] textArray1 = new string[] { "\n\n<!--\n   var __CMS_PostbackForm = document.forms['", this._webForm.ClientID, "'];\n   var __CMS_CurrentUrl = \"", text1, "\";\n// -->\n\n\n" } ;
+  string text2 = string.Concat(textArray1);
+  this.Page.RegisterClientScriptBlock("__CMS_Page", text2);
+  
+  //this.Page.RegisterStartupScript("ResetFormActionScript", "\n<!-- Generated by Microsoft.ContentManagement.WebControls.Console to reset form.action -->\n\n<!--\n\n    var __CMS_PostbackFormBeenReset = false;\n\n    function __cmsRestFormAction()\n    {\n        if ( !__CMS_PostbackFormBeenReset )\n        {\n            // set form postback Url to be current translated CMS Url\n            __CMS_PostbackForm.action = __CMS_CurrentUrl;\n        }\n    }\n\n    var __cmsResetFormCachedPostBack = null;\n    if( typeof window.__doPostBack != \"undefined\" )\n    {\n        __cmsResetFormCachedPostBack = __doPostBack;\n        __doPostBack = __cmsResetFormOverridePostBack;\n    }\n\n    var __cmsResetFormCachedOnSubmit = null;\n    if( typeof __CMS_PostbackForm.onsubmit != \"undefined\" )\n    {\n        __cmsResetFormCachedOnSubmit = __CMS_PostbackForm.onsubmit;\n        __CMS_PostbackForm.onsubmit = __cmsResetFormOverrideOnSubmit;\n    }\n\n    function __cmsResetFormOverridePostBack( eventTarget, eventArgument )\n    {\n        __cmsRestFormAction();\n        __cmsResetFormCachedPostBack( eventTarget, eventArgument );\n    }\n\n    function __cmsResetFormOverrideOnSubmit()\n    {\n        __cmsRestFormAction();\n        if (__cmsResetFormCachedOnSubmit != null)\n            return __cmsResetFormCachedOnSubmit();\n        else\n            return true;\n    }\n// -->\n\n\n\n");
+ }
+
+ // "Borrowed" from original implementation
+ private void RegisterUserCanModifySiteScript()
+ {
+  if (this.CmsPageFrame)
+  {
+   string text1 = "";
+   text1 = text1 + "";
+   text1 = text1 + "";
+   text1 = text1 + "";
+   text1 = text1 + "";
+   text1 = text1 + "";
+   if ((WebAuthorContext.Current.Mode == WebAuthorContextMode.AuthoringNew) || (WebAuthorContext.Current.Mode == WebAuthorContextMode.AuthoringReedit))
+   {
+    text1 = text1 + "";
+   }
+   this.Page.RegisterClientScriptBlock("ScriptFileReferences", text1);
+  }
+  CmsHttpContext context1 = CmsHttpContext.Current;
+  WebAuthorContext context2 = WebAuthorContext.Current;
+  Posting posting1 = context1.Posting;
+  Channel channel1 = context1.Channel;
+  bool flag1 = WebAuthorContext.Current.RegisteredPlaceholderControls != null;
+  string text2 = "";
+  if (context1.ChannelItem != null)
+  {
+   text2 = context1.ChannelItem.QueryString;
+  }
+
+  string[] textArray1 = new string[] { "\n\n<!--\n   var __CMS_PAGE_CONTAINS_PLACEHOLDERS = ", flag1.ToString().ToLower(), ";\n   var __CMS_WEBAPP_PATH = \"", Context.Request.ApplicationPath, "\";\n   var IDS_FRAMEWORK_NEW_VIRTUAL_PATH = \"", Context.Request.ApplicationPath, "CMS/WebAuthor\";\n   var IDS_FRAMEWORK_CHANNELITEM_QUERYSTRING = \"", JavaScriptEncode(text2), "\";\n// -->\n\n\n" } ;
+  string text3 = string.Concat(textArray1);
+  this.Page.RegisterClientScriptBlock("__CMS_Console", text3);
+  this.Page.RegisterHiddenField("__CMS_ConfirmedDelete", "false");
+ }
+
+ // "Borrowed" from original implementation
+ private string JavaScriptEncode(string source)
+ {
+  string text1 = source;
+  text1 = text1.Replace(@"\", @"\");
+  text1 = text1.Replace("\"", "\\"");
+  text1 = text1.Replace("'", @"
+");
+  text1 = text1.Replace("\r", @"\r");
+  text1 = text1.Replace("\n", @"\n");
+  text1 = text1.Replace("\t", @"\t");
+  text1 = text1.Replace("\f", @"\f");
+  return text1.Replace("\v", @"\v");
+ }
+}
+{% endhighlight %}

@@ -1,0 +1,38 @@
+---
+layout: post
+title: The C# ?? Operator
+date: 2007-09-26 13:09:00.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '6422034806396649819'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>I'm not sure how I missed this one, but I have recently discovered the <a href="http://msdn2.microsoft.com/en-us/library/ms173224(VS.80).aspx">??</a> operator in C# and I think that no day will pass again without me using it. Thanks to Mike who pointed it out to me.</p>
+<p>So what does ?? do? It returns the object to its left if that object is not null, otherwise the object to its right. For example:</p>
+{% highlight csharp %}
+public IDataReader Search(DateTime? startDate, EndDate? endDate)
+{
+   IDbCommand cmd = provider.CreateCommand();
+   cmd.CommandText = "dbo.SomeReportingProc";
+   cmd.Connection = base.Context.Connection; // or whatever
+   cmd.CommandType = CommandType.StoredProcedure;
+
+   // StartDate
+   cmd.Parameters.Add("@StartDate", startDate ?? DBNull.Value);
+   cmd.Parameters.Add("@EndDate", endDate ?? DBNull.Value);
+
+   return cmd.ExecuteReader();
+}
+{% endhighlight %}
+<p>And I thought it couldn't get better than the <a href="http://msdn2.microsoft.com/en-us/library/ty67wk28(VS.80).aspx">ternary operator</a>.</p>

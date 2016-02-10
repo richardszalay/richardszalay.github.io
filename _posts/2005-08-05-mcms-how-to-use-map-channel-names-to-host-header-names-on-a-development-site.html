@@ -1,0 +1,39 @@
+---
+layout: post
+title: 'MCMS: How to use "Map Channel Names to Host Header Names" on a development
+  site'
+date: 2005-08-05 06:49:00.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '112322517963960429'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>It's been a painful process, but I've now managed to document a way to use "Map Host Headers to Channel Names" on development servers (even though the root channel name has the final/production url).</p>
+<p>Why this isn't documented by Microsoft I'll never know, as its a common request. Worse you need to get a hotfix from for MCMS (but you can't download it - you need to contact Microsoft) for it to work properly (try it without and you'll see why).</p>
+<ol>
+<li>Contact Microsoft to get the Hotfix outlined in <a href="http://support.microsoft.com/?id=824597">KB824597</a>. Remember to tell them whether you have SP1 installed or not (its a different hotfix): 193kb (non-SP1), and 15.6MB (SP1).</li>
+<li>Install the hotfix on the server</li>
+<li>Download and install (onto the server) ISAPI Rewrite (lite) from http://isapirewrite.com/ - Its free</li>
+<li>IISRESET</li>
+<li>Decide which hostname you'll use for the local/dev version and add this to the httpd.ini (part of ISAPI Rewrite):
+<pre>
+RewriteCond  Host:  DEV_HOSTNAME_HERE
+RewriteHeader Host: .* ROOT_CHANNEL_NAME_HERE</pre>
+</li>
+<li>If you don't have control over the proxy script, add "DEV_HOSTNAME" to your hosts file (%windir%\system32\drivers\etc\hosts) in the format:
+<pre>127.0.0.1      DEV_HOSTNAME_HERE</pre>
+</li>
+<li>If you are receiving authentication errors when accessing the site, checkout <a href="http://support.microsoft.com/?id=294382">KB294382</a>.</li>
+<li>Enable "Map Channel Names to Host Header Names" in the Server Configuration Application</li>
+</ol>

@@ -1,0 +1,59 @@
+---
+layout: post
+title: 'Building a Deployment Pipeline with MSDeploy: Part 4 – Server Configuration'
+date: 2013-02-02 21:42:29.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- Deployment
+tags:
+- deployment-pipeline-series
+- msdeploy
+- web-publishing-pipeline
+meta:
+  _edit_last: '6536909'
+  _publicize_pending: '1'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>So far we've been looking at the <em>development experience</em> of a deployment pipeline, but before we go any further we need to configure where the site will be deployed to. For this, we'll need an instance of Windows Server 2008 or higher.</p>
+<h2>Remote deployment model</h2>
+<p>MSDeploy supports three methods of remote deployment:</p>
+<ol>
+<li><span style="line-height:16px;"><strong>Web Management Service (WMSvc) handler</strong><br />
+This is the preferred method for IIS 7+ / Windows Server 2008+ and supports non-administrator deployments. It piggybacks on the WMSvc (ie. remote IIS management) by registering a custom handler (http://server:8172/msdeploy.axd). Making use of WMSvc also means that this method is not available to Windows client versions (including 7 and 8), as WMSvc is not available on those platforms.</span> At the command line, this method is specified on the dest provider as <em>",computerName=http://server:8172/msdeploy.axd?site=iis-site-name"<br />
+</em></li>
+<li><strong>Web Deploy Agent Service</strong><br />
+This is the only choice for IIS6 / Server 2003, is not installed by default, and requires the deployment user to be an administrator. At the comment line, this method is specified as "<em>,computerName=server</em>"</li>
+<li><strong>"On Demand" Agent Service (temp agent)<br />
+</strong>This choice installs the agent service temporarily for a single deployment. Useful when you have administrator credentials but aren't able to remotely install the handler or agent service. At the command line, this method is specified as <em>",computerName=server,tempAgent=true"</em></li>
+</ol>
+<p>This series will focus on the WMSvc handler method. Any reference to non-administrator users and subsequent feature delegation is only relevant to this method, since the others require administrator deployment users.</p>
+<p>For more information on the various methods of remote deployment, see <a href="http://technet.microsoft.com/en-us/library/ee461175(v=ws.10).aspx">Using Web Deploy Remotely</a> on TechNet.</p>
+<h3>Selective deployment</h3>
+<p>All three methods of remote connection will only transfer content that has deemed to be changed (last modified date by default, checksum as an option). This is achieved by first performing a metadata exchange of the deployment providers, and then streaming the data that needs to be modified.</p>
+<p>As an aside, the protocol between the MSDeploy client (API or exe) and the remote service is undocumented and subsequent to change.</p>
+<h2>Installing MSDeploy</h2>
+<p>The official instructions for installing MSDeploy on a server can be found here: http://www.iis.net/learn/install/installing-publishing-technologies/installing-and-configuring-web-deploy</p>
+<p>However, there are several things to watch out for during the installation process:</p>
+<ul>
+<li><span style="line-height:16px;">Ignore the screenshots - while they aren't wrong per se, they are misleading. Just install "Web Deploy V3" (or whatever the latest version is).</span></li>
+<li>After installation is complete, make sure the <em>WDeployConfigWriter</em> and <em>WDeployAdmin</em> users are marked as "Password never expires". Your local security policy may select otherwise, which will cause deployments to stop working when the passwords (which are never supplied to you) expire.</li>
+</ul>
+<h2>Configuring a deployment user</h2>
+<p>Assuming you have your IIS site already configured, we need to create a <strong>non-adminstrator</strong> user that can publish to it. We'll call that user "SERVER\deploy_user", but the naming (and whether it's a domain or local user) is up to you. In fact, you can even create an IIS user (which is not a Windows user), but I won't be covering that here.</p>
+<p>Once your user is created, we need to grant it permission to deploy the site. Right click on your website and select "Configure for Web Deploy Publishing..." from the "Deploy" sub menu. This does two things:</p>
+<ol>
+<li><span style="line-height:16px;">Grants the user full control to the file system of that website</span></li>
+<li>Adds the user to the access list for that website</li>
+</ol>
+<p>Select your deployment user and click "Setup", ignoring the other fields. This process will create a ".PublishSettings" file on the desktop, but as this relates to previous incarnations of the deployment technology it can (and should) be safely deleted.</p>
+<h3>Feature Delegation</h3>
+<p>A fair question to ask at this point is: if the deployment user is not an adminsitrator, how are they able to perform additional tasks like creating virtual directories?</p>
+<p>The answer is called feature delegation. The specifics won't be discussed until a future post, but if you access "Management Service Delegation" from the server level features in IIS you'll see that individual MSDeploy providers are configured to either use the "current" (ie. deploying) user, WDeployConfigWriter (who can write to IIS's config), WDeployAdmin (who is in the administrators group) or a custom user.</p>
+<p>Delegation rules can be further configured to prevent certain users from using specific providers, or alternatively raise the privileges for certain providers when used for a particular site. This allows authorization to be fine tuned without granting the deploying user administrative privileges.</p>

@@ -1,0 +1,30 @@
+---
+layout: post
+title: Executing Powershell from CruiseControl.NET on 64-bit Windows
+date: 2009-10-22 13:50:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- 64-bit
+- cruisecontrol.net
+- powershell
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '82621392659493262'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>If you try to execute a Powershell script from a CruiseControl.NET build on a 64-bit OS, you'll get the following error:</p>
+<blockquote>File ~filename~.ps1 cannot be loaded because the execution of scripts is disabled on this system. Please see "get-help about_signing" for more details.</blockquote>
+<p>If you google around, you'll be told to execute <strong>Set-ExecutionPolicy</strong>. Unfortunately, on 64-bit, that won't fix your problem.</p>
+<p>The issue is that CruiseControl.NET is 32-bit and the default powershell on 64-bit Windows is 64-bit. When a 32-bit process accesses SOFTWARE registry keys, the request gets redirected to <strong>HKLM\Software\Wow6432Node</strong>. This results in powershell looking for the wrong key and thus getting the default value.</p>
+<p>To work around the problem, execute the following at an elevated command prompt:</p>
+<pre>%windir%\SysWOW64\WindowsPowerShell\v1.0\powershell.exe "Set-ExecutionPolicy RemoteSigned"</pre>
+<p>In finding this solution it prompted me to realise that, in 64-bit Windows, <strong>c:\windows\system32</strong> is 64-bit and <strong>c:\windows\SysWOW64</strong> is 32-bit. And then my head exploded.</p>

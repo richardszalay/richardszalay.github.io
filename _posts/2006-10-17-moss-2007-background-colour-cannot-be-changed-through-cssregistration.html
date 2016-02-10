@@ -1,0 +1,24 @@
+---
+layout: post
+title: 'MOSS 2007: Background colour cannot be changed through CssRegistration'
+date: 2006-10-17 07:48:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '116107188241522400'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>Thanks to the order in which CSS files are registered and then rendered by the CssLink control, our good friend core.css (/_layouts/1033/styles/core.css) will always override your background color with background-color:#FFFFFF; (line 7).</p>
+<p>Usually I'd recommend using <a href="http://www.w3.org/TR/REC-CSS2/cascade.html#important-rules">!important</a> to keep the background, but unfortunately Internet Explorer 6- doesn't support it properly.</p>
+<p>To resolve, it unfortunately means adding a manual  or  after the CssLink control.</p>
+<p>Also, those behavior attributes (core.css: line 12, line 1973) won't pass validation so I hope they don't render to the end user. Don't make me come down there Microsoft.</p>

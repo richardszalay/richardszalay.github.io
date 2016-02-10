@@ -1,0 +1,26 @@
+---
+layout: post
+title: Sending html+text emails with System.Net.Mail
+date: 2006-11-27 20:40:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- ".NET 2.0"
+- Mail
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '7422050959623817037'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>There's something about the new System.Net.Mail classes that has been annoying the hell out of me. I appreciate that the <abbr title="Application Programming Interface">API</abbr> is more complete and that I can finally send emails with embedded images, but there's something that it does less well.</p>
+<p>What annoys me is that System.Web.Mail (or more specifically, the COM objects it was using) automatically generated me a text version of my HTML email. Granted the text version was terrible, but it was a text version nonetheless.</p>
+<p>I know I can add alternate views to my email for HTML/text, but I use Serialization/Xslt to manage my emails and I don't want to maintain two separate Xslt's just so I can have a text version of an email.</p>
+<p>The result? I've had to integrate support to my TranformMailer generic class to create a text version of an HTML email. I'll post TransformMailer once I've cleaned it up a bit.</p>

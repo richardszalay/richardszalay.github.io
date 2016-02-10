@@ -1,0 +1,51 @@
+---
+layout: post
+title: 'Visual Studio.NET: Remove auto-generated IDs macro'
+date: 2005-07-11 23:55:00.000000000 +10:00
+type: post
+published: true
+status: publish
+categories: []
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '112112694465999870'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>After finally having enough of Visual Studio.NET adding "TextBox1"-style IDs/Names to my ASP.NET templates as I pasted them, I thought I'd write a Macro to remove them. Basically the Macro removes any ID or Name attribute that has the value of the tagname plus at least 1 number, namespace/tagprefix's are supported (and ignored).</p>
+<p>It can be quite handy if assigned to an "HTML Editor HTML View" shortcut (I used CTRL+ALT+SHIFT+I) to automatically remove the attributes that VS.NET adds.</p>
+<p>Macro code is as follows:</p>
+{% highlight vb %}
+Imports EnvDTE
+Imports System.Diagnostics
+
+Public Module TextMacros
+
+    Public Sub RemoveGeneratedIDs()
+
+        DTE.Find.Action = vsFindAction.vsFindActionReplaceAll
+        DTE.Find.FindWhat = "<{([a-zA-Z0-9]+\:)*}{[a-zA-Z0-9]+}{.@}:bID="":z+"""
+        DTE.Find.ReplaceWith = "<"
+        DTE.Find.Target = vsFindTarget.vsFindTargetCurrentDocument
+        DTE.Find.PatternSyntax = vsFindPatternSyntax.vsFindPatternSyntaxRegExpr
+        DTE.Find.Execute()
+
+        DTE.Find.FindWhat = "<{([a-zA-Z0-9]+\:)*}{[a-zA-Z0-9]+}{.@}:bNAME="":z+"""
+        DTE.Find.Execute()
+
+        DTE.Find.FindWhat = " "
+        DTE.Find.ReplaceWith = ""
+        DTE.Find.PatternSyntax = vsFindPatternSyntax.vsFindPatternSyntaxLiteral
+
+    End Sub
+
+End Module
+{% endhighlight %}
+<p>Enjoy</p>
+<p>PS. I hate the VS.NET pattern syntax, why can't it be standard Regex?</p>

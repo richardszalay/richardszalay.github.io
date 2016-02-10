@@ -1,0 +1,35 @@
+---
+layout: post
+title: Error installing Windows Phone 7 Series SDK
+date: 2010-03-15 21:14:00.000000000 +11:00
+type: post
+published: true
+status: publish
+categories:
+- windows-phone problem workaround
+tags: []
+meta:
+  blogger_blog: blog.richardszalay.com
+  blogger_author: Richard
+  blogger_0a6ff699a6a5f903e41873d42fec1d2b_permalink: '9178044936805130154'
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>Now that Windows Phone 7 Series has been opened up a little, I was quick to download the SDK CTP. Unfortunately, I had some problems installing it (possibly caused by the recently uninstalled VS 2010 beta 2 on my machine).</p>
+<p>
+<a href="http://richardszalay.files.wordpress.com/2010/03/windows-phone-error.png"><img src="{{ site.baseurl }}/assets/windows-phone-error.png?w=300" border="0" /></a></p>
+<p>The installation would go fine until it tried to install Silverlight 4, at which time the installation stopped and gave me the error message below. (Also of note, that helpful "View Log" link just took me to the Microsoft homepage)</p>
+<p>I had already uninstalled all things Visual Studio and .NET 4, so I snooped a little further and uninstalled all Silverlight tools and runtimes. I even tried installing the <a href="http://silverlight.net/getstarted/silverlight-4/">Silverlight 4 RC developer runtime</a> manually in an attempt to get past it as a dependency of the installer. This didn't work either, hitting me with a random error number (1622) and a link to a <a href="http://www.microsoft.com/getsilverlight/resources/help.aspx?errorID=1622">Microsoft page</a> reiterating the error number and an odd message about writing to a temp folder.</p>
+<p>In the end, I came up with a workaround to using the Silverlight installer exe. I'll document it here for anyone else who comes across the same problem:</p>
+<ol>
+<li>Download the <a href="http://go.microsoft.com/fwlink/?LinkID=167220">Silverlight 4 RC Developer Runtime</a></li>
+<li>Extract the exe to a temp folder using 7zip (or a 7z-supporting application)</li>
+<li>Run <strong>silverlight.msi</strong></li>
+<li>Extract <strong>Silverlight.msp</strong> from silverlight.7z and run it</li>
+<li>Run <strong>silverlightdev.msp</strong></li>
+<li>Re-run the Windows Phone 7 SDK setup and let it continue the installation</li>
+</ol>

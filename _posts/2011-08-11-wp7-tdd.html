@@ -1,0 +1,90 @@
+---
+layout: post
+title: Configuring TDD-style isolated tests for Windows Phone
+date: 2011-08-11 15:18:54.000000000 +10:00
+type: post
+published: true
+status: publish
+categories:
+- unit-testing
+- windows-phone
+tags: []
+meta:
+  _edit_last: '6536909'
+  _wp_old_slug: configuring-tdd-style-isolated-tests-for-windows-phone
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
+---
+<p>This article describes the setup instructions for configuring an environment to run isolated unit tests that are intended to run quicky, easily and often to enable test driven development. For integration tests that access isolated storage, web services or phone features, see the <a href="http://wp7ci.codeplex.com">WP7-CI project</a>.</p>
+<p>This configuration works with all features of the Silverlight Unit Testing framework, including <a href="http://blog.richardszalay.com/2011/08/08/writing-asynchronous-unit-tests-with-rx-and-the-silverlight-unit-testing-framework/">asynchronous tests</a>.</p>
+<p><em>NOTE:</em> These instructions describe the setup for unit MSTest. Why? I personally prefer NUnit, but I use MSTest for my integration tests because of its support for asynchronous Silverlight tests and my preference for a consistant test framework trumps my preference for NUnit.</p>
+<p>Before continuing, it is assumed that you have created a Windows Phone application.</p>
+<h3>Adding a test project</h3>
+<ol>
+<li>Add a "Silverlight Class Library" project to your solution and select "Silverlight 4" as the version</li>
+<li>Add a reference to your Windows Phone project</li>
+<li>Add a reference to <strong>System.Xml</strong> and <strong>System.Windows.Browser</strong></li>
+<li>Add a reference to <strong>Microsoft.Silverlight.Testing</strong> and <strong>Microsoft.VisualStudio.QualityTools.UnitTesting.Silverlight</strong> from the <a href="http://silverlight.codeplex.com/">Silverlight Toolkit</a> (not the WP7 version)</li>
+</ol>
+<h3>Referencing Windows Phone assemblies</h3>
+<p>Since this is a Silverlight 4 project, accessing Phone assemblies should be avoided. However, some assemblies, like Microsoft.Phone.Reactive, may be necessary.</p>
+<p>Since the assemblies won't be in the "Target Framework Directory" (Silverlight 4 in this project), you have two choices on how you reference them:</p>
+<ol>
+<li>Copy the assemblies to your project from <em>%programfiles%\Reference Assemblies\Microsoft\Framework\Silverlight\v4.0\Profile\WindowsPhone</em> <sup>1</sup> and reference them from there</li>
+<li>Add the following snippet to your tests project file after the &lt;ProjectExtensions&gt; that contains &lt;SilverlightProjectProperties&gt; and reference the assemblies from their original location.</li>
+</ol>
+{% highlight xml %}
+<PropertyGroup>
+  <WindowsPhoneFrameworkDirectory Condition=" '$(WindowsPhoneFrameworkDirectory)' == '' ">
+    $(FrameworkPathOverride)\Profile\WindowsPhone
+  </WindowsPhoneFrameworkDirectory>
+  <ResolveAssemblyReferencesDependsOn>
+    $(ResolveAssemblyReferencesDependsOn);AppendWindowsPhoneAssemblyPath
+  </ResolveAssemblyReferencesDependsOn>
+</PropertyGroup>
+<Target Name="AppendWindowsPhoneAssemblyPath">
+  <PropertyGroup>
+    <AssemblySearchPaths>
+      $(AssemblySearchPaths);$(WindowsPhoneFrameworkDirectory)
+    </AssemblySearchPaths>
+  </PropertyGroup>
+</Target>
+{% endhighlight %}
+<p>Either way, <u>you must make sure <strong>Copy Local</strong> is set to <strong>true</strong> for any Windows Phone specific assemblies</u></p>
+<p><sup>1</sup> For Mango, use <em>%programfiles%\Reference Assemblies\Microsoft\Framework\Silverlight\v4.0\Profile\WindowsPhone71</em></p>
+<h3>Adding a simple test</h3>
+<p>For the sake of having a test to run, let's create a simple one now.</p>
+<p>Create a class called "SampleTest":</p>
+{% highlight csharp %}
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+[TestClass]
+public class SampleTest
+{
+    [TestMethod]
+    public void AlwaysPasses()
+    {
+        Assert.IsTrue(true);
+    }
+}
+{% endhighlight %}
+<h3>Running the tests from Visual Studio</h3>
+<ul>
+<li><strong>Visual Studio Test</strong>: Silverlight tests are not supported by the built in test runner</li>
+<li><strong>TestDriven.NET</strong>: Run as Silverlight tests
+</li>
+<li><strong>ReSharper</strong>: Install the <a href="http://agunit.codeplex.com/">AgUnit plugin</a> (you might need to disable the MSTest plugin for AgUnit to work correctly)
+</li>
+</ul>
+<h3>Running the tests from the command line (or CI server)</h3>
+<p>Use the StatLight command line utility:</p>
+<p><code>statlight.exe -d="path\to\assembly.dll" -o=MSTest -v=Feb2011 -r="path\to\log.xml"</code></p>
+<p>By default, StatLight outputs the results in its own format. Alternatively, you can:</p>
+<ul>
+<li>Use the "-MSGenericTestFormat" flag to output in MSTest's output format</li>
+<li>Use the <a href="https://github.com/andywhitfield/StatLightToNUnitReportGenerator">StatLight To NUnit Report Generator</a> to convert the default output to the NUnit format</li>
+</ul>
