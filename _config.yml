@@ -22,5 +22,6 @@ gems:
 markdown: kramdown
 
 permalink: /:year/:month/:day/:title/
+tag_page_dir: tag
 
 excerpt_separator: ""
