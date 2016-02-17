@@ -9,7 +9,7 @@
 title: Richard Szalay's Blog
 email: richard@richardszalay.com
 description: > # this means to ignore newlines until "baseurl:"
-  TODO
+  
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://blog.richardszalay.com" # the base hostname & protocol for your site
 twitter_username: richardszalay
