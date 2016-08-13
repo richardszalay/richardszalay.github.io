@@ -56,9 +56,9 @@ Apple supports three primary method's of distributing an app: the **App Store**,
 
 A **Signing Identity** is a way of guaranteeing that your application was actually made by you, and is required for all forms of distribution. It consists of a **Certificate** and **Private Key**, which are somewhat analagous to the wax seals of yore, whereby the recognizable symbol is your public key and the stamp that presses the wax is the private. These were used to prove that a letter came from a King (or at least was approved by him), and the concept is somewhat similar here. 
 
-There are two types of Signing Identity that relate to this series: Development, which can only be used for debugging on your own devices, and Distribution, which are used for both AdHoc and App Store distribution.
-
 > Gotcha #2 Private keys are only available for download when the certificate is first created. Keep then safe!
+
+There are two types of Signing Identity that relate to this series: Development, which can only be used for debugging on your own devices, and Distribution, which are used for both AdHoc and App Store distribution.
 
 > Gotcha #3 A team can only have 3 distribution certificates (identities) active at any one time.
 
