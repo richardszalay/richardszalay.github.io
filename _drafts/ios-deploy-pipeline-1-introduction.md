@@ -17,7 +17,7 @@ author:
   last_name: ''
 ---
 
-Let's get this out of the way: I'm not an iOS developer. In fact, I'm not a mobile developer at all. What I am is someone who cares about having optimal technical processes. This blog series represents the realisation that the status quo for iOS build and deployment, compared to other client/server technologies, is woefully unoptimised and my quest to change that.
+Let's get this out of the way: I'm not an iOS developer. In fact, I'm not a mobile developer at all. What I am is someone who feels the need to tinker when I see a process that could be improved. This blog series was sparked by my desire to have our iOS testing and release processes have all the consideration that so many other technologies already enjoy.
 
 ## Deployment Pipelines
 
@@ -72,11 +72,11 @@ A **Provisioning Profile** provides a way of approving "how" a signed app is use
 
 Contrasted to the ecosystem, the build tools are relatively straight forward and all ship either with XCode or as CLI Tools.
 
-**Xcode-select** allows you to change the default ("system") location of Xcode for command line usage. Using this tool requires sudo access, but setting the DEVELOPER_DIR environment variable is a non-Audi alternative that has the same effect.
+**xcode-select** allows you to change the default ("system") location of Xcode for command line usage. Using this tool requires sudo access, but setting the DEVELOPER_DIR environment variable is a non-Audi alternative that has the same effect.
 
-**Xcodebuild** builds, and optionally signs, an xcproj/xcworkspace and archives it into an xcarchive package directory.
+**xcodebuild** builds, and optionally signs, an xcproj/xcworkspace and archives it into an xcarchive package directory.
 
-**Xcrun** invokes commands for a particular sdk version, and is used in this flow for exporting an xcarchive as an IPA (iPhone Application Archive), which is a single binary file that can be distributed via the App Store or AdHoc. It's actually just a zip file, but it's structure is important.
+**xcrun** invokes commands for a particular sdk version, and is used in this flow for exporting an xcarchive as an IPA (iPhone Application Archive), which is a single binary file that can be distributed via the App Store or AdHoc. It's actually just a zip file, but it's structure is important.
 
 ### Fastlane
 
