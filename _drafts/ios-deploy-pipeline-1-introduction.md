@@ -94,4 +94,4 @@ Fastlane has been around for some time and has its own share of quirks and seemi
 
 **Deliver** uploads a new app version into iTunes. It can either use local metadata and screenshots to automatically submit for review, or you can add that manually yourself.
 
-There's also numerous other miscellaneous tools and plugins to do everything from talking screenshots to integration with services line HockeyApp (for beta testing) and Sentry (for error reporting).
+There's also numerous other tools and plugins to do everything from talking screenshots to integration with services line HockeyApp (for beta testing) and Sentry (for error reporting).
