@@ -21,7 +21,7 @@ Let's get this out of the way: I'm not an iOS developer. In fact, I'm not a mobi
 
 ## Deployment Pipelines
 
-Deployment pipelines are an automated process through which code goes from development (here, Xcode) to production (the App Store). They are a major tenant of Continuous Delivery, which I strongly encourage you learn more about by reading the Humble/Farley book of the same name.
+Deployment pipelines are an automated process through which code goes from development (here, Xcode) to production (the App Store). They are a major tenant of Continuous Delivery, which I strongly encourage you learn more about by reading [the Humble/Farley book of the same name](https://www.amazon.com/Continuous-Delivery-Deployment-Automation-Addison-Wesley/dp/0321601912).
 
 As a logical extension of Continuous Integration, Continuous Delivery calls for the entire pipeline to occur on a non-development machine in order to keep the configuration known and reproducible.
 
