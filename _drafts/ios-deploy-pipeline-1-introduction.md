@@ -46,43 +46,43 @@ What this series won't be covering is recommendations on how to write applicatio
 
 ### The Apple Development Ecosystem
 
-It's important to have a reasonable understanding of the world of iOS application signing and distribution before we go any further. I strongly recommend you read "Maintaining Identifiers, Devices, and Profiles" guide in the Apple developer documentation, but here's a basic rundown:
+It's important to have a reasonable understanding of the world of iOS application signing and distribution before we go any further. I strongly recommend you read ["Maintaining Identifiers, Devices, and Profiles"](https://developer.apple.com/library/ios/documentation/IDEs/Conceptual/AppDistributionGuide/MaintainingProfiles/MaintainingProfiles.html#//apple_ref/doc/uid/TP40012582-CH30-SW1) section of the iOS App Distribution Guide in the Apple developer documentation, but here's a basic rundown:
 
 First up, Apple has two management areas: **The Developer Portal** allows you to manage everything to do with code signing, and **iTunes Connect** allows you to upload (signed) builds, attach metadata like screenshots and pricing, and submit for review. You can be registered against more than one Team, and be able to manage each teams' apps.
 
-> Gotcha #1 (of many): Apple Developer teams and iTunes Teams have different IDs when it comes to automation. The former's ID is plastered everywhere and uses numbers and letters, the latter is numeric and is not easy to find. More on this later.
+> **Gotcha #1 (of many):** Apple Developer teams and iTunes Teams have different IDs when it comes to automation. The former's ID is plastered everywhere and uses numbers and letters, the latter is numeric and is not easy to find. More on this later.
 
 Apple supports three primary method's of distributing an app: the **App Store**, where it can be downloaded by the world and make you a millionaire;  **AdHoc**, via a private distribution channel to a set number of registered devices; and for **Development** on your own personal devices. (there's actually also Enterprise, which is somewhere between AdHoc and a private App Store). 
 
 A **Signing Identity** is a way of guaranteeing that your application was actually made by you, and is required for all forms of distribution. It consists of a **Certificate** and **Private Key**, which are somewhat analagous to the wax seals of yore, whereby the recognizable symbol is your public key and the stamp that presses the wax is the private. These were used to prove that a letter came from a King (or at least was approved by him), and the concept is somewhat similar here. 
 
-> Gotcha #2 Private keys are only available for download when the certificate is first created. Keep then safe!
+> **Gotcha #2** Private keys are only available for download when the certificate is first created. Keep then safe!
 
 There are two types of Signing Identity that relate to this series: Development, which can only be used for debugging on your own devices, and Distribution, which are used for both AdHoc and App Store distribution.
 
-> Gotcha #3 A team can only have 3 distribution certificates (identities) active at any one time.
+> **Gotcha #3** A team can only have 3 distribution certificates (identities) active at any one time.
 
 An **App (Bundle) Identifier** is a unique ID for an application, usually a "reverse domain" like com.richardszalay.appname. It's made universally unique by prepending your (portal) team ID.
 
 A **Provisioning Profile** provides a way of approving "how" a signed app is used, and are distributed as part of the app. They are linked to both a signing identity and an app bundle identifier, though they support wildcards for the latter. Their usage for Development and App Store distributions is straight forward, but for AdHoc they contain the list of Unique Device Identifiers (UDID) of devices' that can install the app. For other devices, the app will simply refuse to install. 
 
-> Gotcha #4 Obtaining a UDID from a device is quite an ordeal, and generally requires connecting the device to iTunes. Some beta testing services, like  HockeyApp, manage it via an app with special permissions.
+> **Gotcha #4** Obtaining a UDID from a device is quite an ordeal, and generally requires connecting the device to iTunes. Some beta testing services, like  HockeyApp, manage it via an app with special permissions.
 
 ### The XCode Build Process 
 
 Contrasted to the ecosystem, the build tools are relatively straight forward and all ship either with XCode or as CLI Tools.
 
-**Xcode-select** allows you to swap between "active" versions of Xcode for command line usage.
+**Xcode-select** allows you to change the default ("system") location of Xcode for command line usage. Using this tool requires sudo access, but setting the DEVELOPER_DIR environment variable is a non-Audi alternative that has the same effect.
 
 **Xcodebuild** builds, and optionally signs, an xcproj/xcworkspace and archives it into an xcarchive package directory.
 
-**Xcrun** exports an xcarchive as an IPA (iPhone Application Archive), which is a single binary file that can be distributed via the App Store or AdHoc. It's actually just a zip file, but it's structure is important.
+**Xcrun** invokes commands for a particular sdk version, and is used in this flow for exporting an xcarchive as an IPA (iPhone Application Archive), which is a single binary file that can be distributed via the App Store or AdHoc. It's actually just a zip file, but it's structure is important.
 
 ### Fastlane
 
-Fastlane attempts to simplify the above tools and processes by unifying them under a set of ruby-friendly tools, adding automation to previously manual web portals and smoothing out the rough edges of the command line tool experience.
+[Fastlane](https://fastlane.tools/) attempts to simplify the above tools and processes by unifying them under a set of ruby-friendly actions, adding automation to previously manual web portals and smoothing out the rough edges of the command line tool experience.
 
-Fast lane has been around for some time and has it's own share of quirks and seemingly conflicting advice, so I'll outline a few of its main tools here:
+Fastlane has been around for some time and has its own share of quirks and seemingly conflicting advice, so I'll outline a few of its main tools here:
 
 **Gym** builds xcarchives and ipas, wrapping the build and signing processes of xcodebuild and xcrun, and works around the shortcomings of those tools by adding back features that are currently exclusive to the Xcode IDE, like support for Swift and Apple Watch.
 
