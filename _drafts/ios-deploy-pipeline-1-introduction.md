@@ -1,9 +1,8 @@
 ---
 layout: post
 title: 'Creating a Build-Once iOS Deployment Pipeline: Part 1 - Introduction'
-date: 
+date: 2016-08-14 22:18:00.000000000 +10:00
 type: post
-published: false
 status: draft
 categories: []
 tags: []
@@ -17,7 +16,16 @@ author:
   last_name: ''
 ---
 
-Let's get this out of the way: I'm not an iOS developer. In fact, I'm not a mobile developer at all. What I am is someone who feels the need to tinker when I see a process that could be improved. This blog series was sparked by my desire to have our iOS testing and release processes have all the consideration that so many other technologies already enjoy.
+Let's get this out of the way: I'm not an iOS developer. In fact, I'm not a mobile developer at all. What I am is someone who feels the need to tinker when I see a process that could be improved. This series was sparked by my desire to have our iOS testing and release processes have all the consideration that so many other technologies already enjoy.
+
+The series will no doubt be wordy so, for your convenience, here's a tl;dr guide:
+
+* Part 1 - Introduction, and concept/tools primer
+* [Part 2 - Deploy pipeline design]({% post_url 2016-08-14-ios-deploy-pipeline-2-the-road-ahead %})
+* [Part 3 - Build server setup and build/test phases]({% post_url 2016-08-14-ios-deploy-pipeline-3-setup-and-build-test-phase %})
+* [Part 4 - Deploy phase]( {% post_url 2016-08-14-ios-deploy-pipeline-4-deploy-phase %})
+
+
 
 ## Deployment Pipelines
 
@@ -36,7 +44,7 @@ If the above sounds like a good idea, it would make sense that there would be ex
 
 This series hopes to provide information on how to configure a pipeline that follows the tenants of a Continuous Delivery-style deployment pipeline.
 
-## What included this series?
+## What's included this series?
 
 This series intends to describe the tools and archictecture of a deployment pipeline that builds only once and applies configuration at deploy-time, which is useful for both white labelled applications and those with numerous target API environments or unique client "keys".
 
@@ -56,17 +64,17 @@ Apple supports three primary method's of distributing an app: the **App Store**,
 
 A **Signing Identity** is a way of guaranteeing that your application was actually made by you, and is required for all forms of distribution. It consists of a **Certificate** and **Private Key**, which are somewhat analagous to the wax seals of yore, whereby the recognizable symbol is your public key and the stamp that presses the wax is the private. These were used to prove that a letter came from a King (or at least was approved by him), and the concept is somewhat similar here. 
 
-> **Gotcha #2** Private keys are only available for download when the certificate is first created. Keep then safe!
+> **Gotcha #2:** Private keys are only available for download when the certificate is first created. Keep then safe!
 
 There are two types of Signing Identity that relate to this series: Development, which can only be used for debugging on your own devices, and Distribution, which are used for both AdHoc and App Store distribution.
 
-> **Gotcha #3** A team can only have 3 distribution certificates (identities) active at any one time.
+> **Gotcha #3:** A team can only have 3 distribution certificates (identities) active at any one time.
 
 An **App (Bundle) Identifier** is a unique ID for an application, usually a "reverse domain" like com.richardszalay.appname. It's made universally unique by prepending your (portal) team ID.
 
 A **Provisioning Profile** provides a way of approving "how" a signed app is used, and are distributed as part of the app. They are linked to both a signing identity and an app bundle identifier, though they support wildcards for the latter. Their usage for Development and App Store distributions is straight forward, but for AdHoc they contain the list of Unique Device Identifiers (UDID) of devices' that can install the app. For other devices, the app will simply refuse to install. 
 
-> **Gotcha #4** Obtaining a UDID from a device is quite an ordeal, and generally requires connecting the device to iTunes. Some beta testing services, like  HockeyApp, manage it via an app with special permissions.
+> **Gotcha #4:** Obtaining a UDID from a device is quite an ordeal, and generally requires connecting the device to iTunes. Some beta testing services, like  HockeyApp, manage it via an app with special permissions.
 
 ### The XCode Build Process 
 
@@ -95,3 +103,5 @@ Fastlane has been around for some time and has its own share of quirks and seemi
 **Deliver** uploads a new app version into iTunes. It can either use local metadata and screenshots to automatically submit for review, or you can add that manually yourself.
 
 There's also numerous other tools and plugins to do everything from talking screenshots to integration with services line HockeyApp (for beta testing) and Sentry (for error reporting).
+
+In [Part 2]({% post_url 2016-08-14-ios-deploy-pipeline-2-the-road-ahead %}) we'll design our pipeline around these technologies.

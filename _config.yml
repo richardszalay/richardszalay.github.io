@@ -18,6 +18,9 @@ github_username:  richardszalay
 gems:
   - jekyll-gist
 
+gist:
+  noscript: false
+
 # Build settings
 markdown: kramdown
 
