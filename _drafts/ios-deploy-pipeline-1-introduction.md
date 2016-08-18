@@ -62,7 +62,7 @@ First up, Apple has two management areas: **The Developer Portal** allows you to
 
 Apple supports three primary method's of distributing an app: the **App Store**, where it can be downloaded by the world and make you a millionaire;  **AdHoc**, via a private distribution channel to a set number of registered devices; and for **Development** on your own personal devices. (there's actually also Enterprise, which is somewhere between AdHoc and a private App Store). 
 
-A **Signing Identity** is a way of guaranteeing that your application was actually made by you, and is required for all forms of distribution. It consists of a **Certificate** and **Private Key**, which are somewhat analagous to the wax seals of yore, whereby the recognizable symbol is your public key and the stamp that presses the wax is the private. These were used to prove that a letter came from a King (or at least was approved by him), and the concept is somewhat similar here. 
+A **Signing Identity** is a way of guaranteeing that your application was actually made by you, and is required for all forms of distribution. It consists of a **Certificate** and **Private Key**, which are somewhat analagous to the wax seals of yore, whereby the recognizable symbol is your public key and the stamp that presses the wax is the private key. These were used to prove that a letter came from a King (or at least was approved by him), and the concept is somewhat similar here. 
 
 > **Gotcha #2:** Private keys are only available for download when the certificate is first created. Keep then safe!
 
