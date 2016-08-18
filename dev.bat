@@ -1,0 +1,1 @@
+bundle exec jekyll server --drafts --config .\_config.yml,.\_config.dev.yml --watch

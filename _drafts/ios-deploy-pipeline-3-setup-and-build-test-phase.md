@@ -43,6 +43,8 @@ Relevant Apple documentation:
 Whether you have numerous applications in varying states of legacy or a new app that you'd like to test against newer tooling on a branch, you'll eventually want to make 
 use of multiple versions of XCode. Apple provides downloads for every version of XCode and the Command Line Tools at the [Downloads for Apple Developers](https://developer.apple.com/download/more/) on the Developer Portal.
 
+You can set the `DEVELOPER_DIR` directory before your build and it will use the appropriate XCode/Tooling installation.
+
 #### Dependency Management
 
 Both Ruby Gems and Homebrow both install packages under `/usr/local`, which your build user won't necessarily be able to write to.
@@ -61,7 +63,9 @@ I went with the former, but you can read [this Stack Exchange question](http://a
  
 I'm not going to walk through how to setup fastlane, since this is not a fastlane tutorial. We don’t need any of the default lanes, so you can delete them if you don’t need then. We also won't need any if the other config files (Matchfile, Deliverfile) though, again, you're free to keep them if they work for you. You could even skip initializing fastlane and start writing your "lanes" (tasks) yourself. 
  
-One recommendation I will make is to use a Gemfile and the "bundle exec" syntax for both fastlane and any other build tools you might be using (ie. Cocoapods). These tools often break compatibility and a Gemfile allows you to lock the version local to your app, rather than relying on the globally installed version.  
+One recommendation I will make is to use a Gemfile and the "bundle exec" syntax for both fastlane and any other build tools you might be using (ie. Cocoapods). These tools often break compatibility and a Gemfile allows you to lock the version local to your app, rather than relying on the globally installed version.
+
+You may need to add some variables to your `.bashrc` to set the locale to en_US.UTF-8 to avoid any "invalid byte sequence" errors. See [fastlane/#488](https://github.com/fastlane/fastlane/issues/488) for more details.
  
 Also keep in mind that, for all fastlane actions, almost all of their options can be specified as arguments, environment variables, or in a separate configuration file. Don't be afraid to look at the source code and use GitHub's "search in repository" feature. Here's a direct link to all the actions we're using: 
  
@@ -118,7 +122,19 @@ lane :test do
 end
 ```
 
-## Build artifacts 
+### Putting it all together
+
+Here's a gist of the fully assembled Fastfile:
+
+{% gist b0546b4ec49ae2be118a21fb883e32f7 .bashrc %}
+
+{% gist b0546b4ec49ae2be118a21fb883e32f7 build.sh %}
+
+{% gist b0546b4ec49ae2be118a21fb883e32f7 build-gemfile.rb %}
+
+{% gist b0546b4ec49ae2be118a21fb883e32f7 build-fastfile.rb %}
+
+#### Build artifacts 
  
 We now have two sets of artifacts that can be captured: 
  
@@ -126,3 +142,5 @@ We now have two sets of artifacts that can be captured:
  
 **fastlane/build/DeploymentPipeline.ipa** and 
 **fastlane/build/DeploymentPipeline.app.dSYM.zip** - application archive and symbols archive. Well need to keep both for our deployment phase: the IPA contains our application and the dSYM.zip is useful for getting meaningful crash reports in services like HockeyApp, TestFlight, and Sentry. How you capture these artifacts will depend on your CI server, but most should support a glob-style pattern. 
+
+In [Part 4]({% post_url 2016-08-14-ios-deploy-pipeline-4-deploy-phase %}) we'll setup our deployment fastfile in the configuration repository.

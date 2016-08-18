@@ -36,17 +36,17 @@ In vast contrast to the build lane, deployment has a substantial number of actio
 
 |Action|Usage|Keychain|Alternatives|
 |:-----|:----|:-------|:-----------|
-|Match|Certificate Repository (Git) authentication|(list-keychains)|SSH/RSA|
-|Match|Password for encrypting the private keys stored in the repository|(list-keychains)|ENV["MATCH_PASSWORD"]|
-|Match|Importing signing identities|`ENV['MATCH_KEYCHAIN_NAME']`|N/A|
-|Sigh|Accessing signing identities|(list-keychains)|N/A|
-|HockeyApp|HockeyApp API token|N/A|`ENV['FL_HOCKEY_API_TOKEN']`|
-|Deliver|iTunes password for deployment|(default)|`ENV['DELIVER_PASSWORD']`|
+|Match|Certificate Repository (Git) authentication|(list-keychains)|**SSH/RSA**|
+|Match|Password for encrypting the private keys stored in the repository|(list-keychains)|**`ENV["MATCH_PASSWORD"]`**|
+|Match|Importing signing identities|**`ENV['MATCH_KEYCHAIN_NAME']`**|N/A|
+|Sigh|Accessing signing identities|**(list-keychains)**|N/A|
+|HockeyApp|HockeyApp API token|N/A|**`ENV['FL_HOCKEY_API_TOKEN']`**|
+|Deliver|iTunes password for deployment|(default)|**`ENV['DELIVER_PASSWORD']`**|
 
 A few things to note
 
-Match supports an option for a specific keychain, but Sigh does not. There's also no way to avoid Keychains altogether, as even actions that accept a custom keychain tend to rely on downstream functionality that does not.
-Actions that use the "default keychain" actually use the first item from keychain search list, that is the result of "security list-keychains" as opposed to "security default-keychain", so there's no need to change the default/login keychains in order to customise them.
+* Match supports an option for a specific keychain, but Sigh does not. There's also no way to avoid Keychains altogether, as even actions that accept a custom keychain tend to rely on downstream functionality that does not.
+* Actions that use the "default keychain" actually use the first item from keychain search list, that is the result of "security list-keychains" as opposed to "security default-keychain", so there's no need to change the default/login keychains in order to customise them.
 
 I've highlighted which of the options we went with, but I'll explain the justification as we go.
 
@@ -202,114 +202,14 @@ Gotcha if you remember from part one, iTunes have different team ids from the de
 
 ### Putting it all together
 
-Here is the fully assembled Fastfile, though I've taken the liberty of refactoring it to avoid deduplication between release types. I've also included bash scripts to  
+Here is the fully assembled Fastfile, though I've taken the liberty of refactoring it to avoid deduplication between release types. I've also included bash scripts to simulate what's needed from the build server.
 
-```bash
-#!/bin/bash
-# release-qa.sh
+{% gist b0546b4ec49ae2be118a21fb883e32f7 release-qa.sh %}
 
-# https://github.com/fastlane/fastlane/issues/227
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-```
+{% gist b0546b4ec49ae2be118a21fb883e32f7 release-appstore.sh %}
 
+{% gist b0546b4ec49ae2be118a21fb883e32f7 release-gemfile.rb %}
 
-```ruby
-require 'spare_keys'
-
-default_platform :ios
-
-platform :ios do
-
-  CERTIFICATES_REPOSITORY = "git@server.com:path/to/certificates-repository.git"
-
-  QA_APP_IDENTIFIER = "com.richardszalay.demo.qa"
-  APPSTORE_APP_IDENTIFIER = "com.richardszalay.demo"
-
-  lane :update_certs do |options|
-
-    match(
-      type: "adhoc",
-      git_url: CERTIFICATES_REPOSITORY,
-      app_identifier: QA_APP_IDENTIFIER,
-      readonly: false
-    )
-
-    match(
-      type: "appstore",
-      git_url: CERTIFICATES_REPOSITORY,
-      app_identifier: APPSTORE_APP_IDENTIFIER,
-      readonly: false
-    )
-
-  end
-
-  desc "Releases a build to HockeyApp. Requires that FL_HOCKEY_API_TOKEN is set."
-  lane :release_hockey do |options|
-    release(
-      ipa: options[:ipa],
-      app_identifier: QA_APP_IDENTIFIER,
-      match_type: "adhoc",
-      demo_environment_value: "QA!"
-    )
-  end
-
-  desc "Releases a build to iTunes. Requires that FL_HOCKEY_API_TOKEN, DELIVER_USERNAME, and DELIVER_PASSWORD are set."
-  lane :release_appstore do |options|
-    release(
-      ipa: options[:ipa],
-      app_identifier: APPSTORE_APP_IDENTIFIER,
-      match_type: "appstore",
-      demo_environment_value: "AppStore!"
-    )
-  end
-
-  private_lane :release do |options|
-    act(
-      ipa: options[:ipa],
-      plist_values: {
-        ":DemoEnvironmentValue" => options[:demo_environment_value]
-      }
-    )
-
-    SpareKeys.temp_keychain(true) { |temp_keychain_path|
-      match(
-        type: options[:match_type],
-        git_url: CERTIFICATES_REPOSITORY,
-        app_identifier: options[:app_identifier],
-        keychain_name: temp_keychain_path,
-        readonly: true
-      )
-
-      resign(
-        ipa: options[:ipa],
-        provisioning_profile: match_result_provisioning_profile(options[:app_identifier], options[:match_type])
-      )
-    }
-
-    # We always release to hockey for the symbolised crash logs
-    hockey(
-      ipa: options[:ipa]
-    )
-
-    deliver(
-      ipa: options[:ipa],
-
-      skip_screenshots: true,
-      skip_metadata: true,
-      submit_for_review: false,
-      automatic_release: false
-    ) if options[:match_type] == "app_store"
-  end
-
-  def match_result_provisioning_profile(app_identifier, match_type)
-    sigh_profile_key = "sigh_#{app_identifier}_#{match_type}"
-
-    return {
-      app_identifier => File.join(FastlaneCore::ProvisioningProfile.profiles_path, "#{ENV[sigh_profile_key]}.mobileprovision")
-    }
-  end
-end
-```
+{% gist b0546b4ec49ae2be118a21fb883e32f7 release-fastfile.rb %}
 
 ## Closing Thoughts

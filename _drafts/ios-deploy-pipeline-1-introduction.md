@@ -23,7 +23,7 @@ The series will no doubt be wordy so, for your convenience, here's a tl;dr guide
 * Part 1 - Introduction, and concept/tools primer
 * [Part 2 - Deploy pipeline design]({% post_url 2016-08-14-ios-deploy-pipeline-2-the-road-ahead %})
 * [Part 3 - Build server setup and build/test phases]({% post_url 2016-08-14-ios-deploy-pipeline-3-setup-and-build-test-phase %})
-* [Part 4 - Deploy phase]( {% post_url 2016-08-14-ios-deploy-pipeline-4-deploy-phase %})
+* [Part 4 - Deploy phase]({% post_url 2016-08-14-ios-deploy-pipeline-4-deploy-phase %})
 
 
 
