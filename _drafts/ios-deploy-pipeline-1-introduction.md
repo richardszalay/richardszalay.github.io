@@ -48,7 +48,7 @@ This series hopes to provide information on how to configure a pipeline that fol
 
 This series intends to describe the tools and archictecture of a deployment pipeline that builds only once and applies configuration at deploy-time, which is useful for both white labelled applications and those with numerous target API environments or unique client "keys".
 
-What this series won't be covering is recommendations on how to write application code, unit tests, or on dependency management using Cocoapods/Carthage. There's plenty of information around about those topics, written by people far more qualified to write about them then I.
+What this series won't be covering is recommendations on how to write application code, unit tests, or on dependency management using Cocoapods/Carthage. There's plenty of information around about those topics, written by people far more qualified to write about them than I.
 
 ## Concept and Tools Primer
 
