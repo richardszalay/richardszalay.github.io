@@ -96,9 +96,11 @@ Fastlane has been around for some time and has its own share of quirks and seemi
 
 **Scan** builds and runs unit tests on the simulator or a physical device.
 
-**Cert** accesses and validates certificates in the Developer Portal, creating a new one if required. **Sigh** does the same for provisioning profiles, though oddly also includes a tool for resigning an existing ipa with a different signing identity / provisioning profile.
+**Cert** accesses and validates signing identities in the Developer Portal and stores them in your local keychain, creating a new one if required. 
 
-**Match** is the newer, and recommend, alternative to both Cert and Sigh. Instead of using the Developer Portal as the source of truth for signing identitues, it uses a git repository. The thinking behind the process is outlined at https://codesigning.guide/. Sigh and Cert can both still be useful for advanced scenarios, but most of the time you won't need them.
+**Sigh** functions similarly Cert but for provisioning profiles. It also includes a tool for resigning an existing ipa with a different signing identity / provisioning profile.
+
+**Match** is the newer, and recommend, alternative to both Cert and Sigh. Instead of using the Developer Portal as the source of truth for signing identitues and provisioning profiles, it uses a git repository. The thinking behind the process is outlined at https://codesigning.guide/. Sigh and Cert can both still be useful for advanced scenarios, but most of the time you won't need them.
 
 **Deliver** uploads a new app version into iTunes. It can either use local metadata and screenshots to automatically submit for review, or you can add that manually yourself.
 
