@@ -20,7 +20,7 @@ This is part 2 of my [Creating a Build-Once iOS Deployment Pipeline series]({% p
 
 In [part 1]({% post_url 2016-08-14-ios-deploy-pipeline-1-introduction %}), we looked at the tools and processes for building and distributing iOS apps. Let's see what that looks like as a deployment pipeline that needs to be tested in HockeyApp before being released via the App Store.
 
-The app we'll base the rest of this series on is a basic single screen app that displays a value from "DemoEnvironmentValue" key of the infoDictionary (Info.plist). We'll be using that as "environment specific configuration", but it could just as easily be an API base URL, or even a SQLite database used to seed data.
+The app we'll base the rest of this series on is a basic single screen app that displays a value from the "DemoEnvironmentValue" key of the infoDictionary (Info.plist). We'll be using that as "environment specific configuration", but it could just as easily be an API base URL, or even a SQLite database used to seed data.
 
 ## Guiding tenants
 
