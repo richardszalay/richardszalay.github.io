@@ -192,7 +192,13 @@ We'll only be deploying to HockeyApp for our QA release to keep things simple, b
 
 We're not going to auto release here, as we don't have the release notes in our configuration repository, so the release will need to be completed via the HockeyApp dashboard. However, if your workflow supports it, the HockeyApp fastlane action supports a tone of options for you to choose from.
 
-Hocleyapp()
+The HockeyApp app will be automatically be selected based on the app identifier. The only thing that need to be set is `FL_HOCKEY_API_TOKEN` 
+
+```ruby
+hockey(
+  ipa: options[:ipa]
+)
+```
 
 ### AppStore
 
@@ -213,3 +219,8 @@ Here is the fully assembled Fastfile, though I've taken the liberty of refactori
 {% gist b0546b4ec49ae2be118a21fb883e32f7 release-fastfile.rb %}
 
 ## Closing Thoughts
+
+Having worked with this model for a few weeks, I definitely prefer it. It's saved us a bunch of time testing new builds, and having the configuration in a separate repository means 
+small configuration mistakes don't have the impact of an entire build cycle. Iteration configuration is extremely quick.
+
+I would like to investigate 
