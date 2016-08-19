@@ -49,11 +49,7 @@ You can set the `DEVELOPER_DIR` directory before your build and it will use the 
 
 Both Ruby Gems and Homebrow both install packages under `/usr/local`, which your build user won't necessarily be able to write to.
 
-TODO
-
-For Gems, you can set the `GEM_HOME` variable to something like `~/.gems` works well. Setting this at the start of your deployment script would be ideal, just don't forget to append it to `$PATH`. 
-
-As long as you are using a Gemfile and the `bundle exec fastlane` syntax, your Gem dependencies will remain isolated to your build. 
+For Gems, you can set the `GEM_HOME` variable to something like `~/.gems` in your `.bashrc`. If you use Ruby Version Manager (rvm), it will do this for you. If you're setting this manually, just don't forget to append it to `$PATH`.  Stick to using the `bundle install` and `bundle exec fastlane` syntax, as that will ensure that the same versions are always used.
 
 Homebrew dependencies, like ImageMagick (required by fastlane's badge), aren't so easy to isolate. I would still recommend using a bundler like [Brew Bundle](https://github.com/Homebrew/homebrew-bundle), but how 
 you deal with being able to write to `/usr/local` is up to you. Your choice is essentially between `chown`ing the `/usr/local` directory or configuring Brew to install to a profile-local directory. 
@@ -102,9 +98,9 @@ end
 
 ### Test 
  
-To test we use Scan, selecting the simulator to run then in and the scheme to use when building the tests. 
+To test, we use Scan, selecting the simulator (or device) to run on and the scheme to use when building the tests. 
  
-> **Gotcha #7:** Scan always outputs test results using the selected format as a file extension, in our case report.junit. Some CI servers might but pick this up, so we'll rename the file to .xml. 
+> **Gotcha #7:** Scan always outputs test results using the selected format as a file extension, in our case report.junit. Some CI servers might not pick this up, so we'll rename the file to .xml. 
  
 ```ruby
 desc "Run unit tests"
