@@ -22,9 +22,7 @@ In [part 1]({% post_url 2016-08-14-ios-deploy-pipeline-1-introduction %}), we lo
 
 The app we'll base the rest of this series on is a basic single screen app that displays a value from the "DemoEnvironmentValue" key of the infoDictionary (Info.plist). We'll be using that as "environment specific configuration", but it could just as easily be an API base URL, or even a SQLite database used to seed data.
 
-## Guiding tenants
-
-The resulting 
+## Guiding tenants 
 
 ### Security
 
