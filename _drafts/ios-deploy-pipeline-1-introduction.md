@@ -16,7 +16,7 @@ author:
   last_name: ''
 ---
 
-Let's get this out of the way: I'm not an iOS developer. In fact, I'm not a mobile developer at all. What I am is someone who feels the need to tinker when I see a process that could be improved. This series was sparked by my desire to have our iOS testing and release processes have all the consideration that so many other technologies already enjoy.
+Let's get this out of the way: I'm not an iOS developer. In fact, I'm not a mobile developer at all. Nevertheless, I found myself needing to optimise our iOS build, test, and release process for speed and consistency. This series is the resulting output.
 
 The series will no doubt be wordy so, for your convenience, here's a tl;dr guide:
 
