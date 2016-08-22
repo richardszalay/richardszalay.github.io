@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Creating a Build-Once iOS Deployment Pipeline: Part 2 - Designing the Deployment Pipeline'
-date: 2016-08-14 22:19:00.000000000 +10:00
+date: 2016-08-23 08:20:00.000000000 +10:00
 type: post
 status: draft
 categories: []
@@ -16,9 +16,9 @@ author:
   last_name: ''
 ---
 
-This is part 2 of my [Creating a Build-Once iOS Deployment Pipeline series]({% post_url 2016-08-14-ios-deploy-pipeline-1-introduction %}). 
+This is part 2 of my [Creating a Build-Once iOS Deployment Pipeline series]({% post_url 2016-08-23-ios-deploy-pipeline-1-introduction %}). 
 
-In [part 1]({% post_url 2016-08-14-ios-deploy-pipeline-1-introduction %}), we looked at the tools and processes for building and distributing iOS apps. Let's see what that looks like as a deployment pipeline that needs to be tested in HockeyApp before being released via the App Store.
+In [part 1]({% post_url 2016-08-23-ios-deploy-pipeline-1-introduction %}), we looked at the tools and processes for building and distributing iOS apps. Let's see what that looks like as a deployment pipeline that needs to be tested in HockeyApp before being released via the App Store.
 
 The app we'll base the rest of this series on is a basic single screen app that displays a value from the "DemoEnvironmentValue" key of the infoDictionary (Info.plist). We'll be using that as "environment specific configuration", but it could just as easily be an API base URL, or even a SQLite database used to seed data.
 
@@ -90,4 +90,4 @@ We use git, but any VCS would work.
 
 The deploy phase will need an Apple Developer account, to verify signing identities and deploy to iTunes. It will also need a hockeyapp api key, and access to the certificates repository. We'll be leaving these secrets to the build server to supply.
 
-In [Part 3]({% post_url 2016-08-14-ios-deploy-pipeline-3-setup-and-build-test-phase %}) we'll configure our build server and setup the build and test phases in fastlane.
+In [Part 3]({% post_url 2016-08-23-ios-deploy-pipeline-3-setup-and-build-test-phase %}) we'll configure our build server and setup the build and test phases in fastlane.

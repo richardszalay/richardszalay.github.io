@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Creating a Build-Once iOS Deployment Pipeline: Part 3 - Setup and Build/Test Phases'
-date: 2016-08-14 22:20:00.000000000 +10:00
+date: 2016-08-23 08:25:00.000000000 +10:00
 type: post
 status: draft
 categories: []
@@ -16,9 +16,9 @@ author:
   last_name: ''
 ---
 
-This is part 3 of my [Creating a Build-Once iOS Deployment Pipeline series]({% post_url 2016-08-14-ios-deploy-pipeline-1-introduction %}).
+This is part 3 of my [Creating a Build-Once iOS Deployment Pipeline series]({% post_url 2016-08-23-ios-deploy-pipeline-1-introduction %}).
  
-In [part 2]({% post_url 2016-08-14-ios-deploy-pipeline-2-the-road-ahead %}) we looked what our deployment looked like at a high level, as well as what we were trying to achieve. And now we finally start to put things together. For those that made it through the first two posts, I thank you. To those that skipped them, I don't blame you. Let's get to it. 
+In [part 2]({% post_url 2016-08-23-ios-deploy-pipeline-2-pipeline-architecture %}) we looked what our deployment looked like at a high level, as well as what we were trying to achieve. And now we finally start to put things together. For those that made it through the first two posts, I thank you. To those that skipped them, I don't blame you. Let's get to it. 
  
 The build and test phases both require the application code repository and are actually relatively simple so we'll include them both in this part. 
  
@@ -139,4 +139,4 @@ We now have two sets of artifacts that can be captured:
 **fastlane/build/DeploymentPipeline.ipa** and 
 **fastlane/build/DeploymentPipeline.app.dSYM.zip** - application archive and symbols archive. Well need to keep both for our deployment phase: the IPA contains our application and the dSYM.zip is useful for getting meaningful crash reports in services like HockeyApp, TestFlight, and Sentry. How you capture these artifacts will depend on your CI server, but most should support a glob-style pattern. 
 
-In [Part 4]({% post_url 2016-08-14-ios-deploy-pipeline-4-deploy-phase %}) we'll setup our deployment fastfile in the configuration repository.
+In [Part 4]({% post_url 2016-08-23-ios-deploy-pipeline-4-deploy-phase %}) we'll setup our deployment fastfile in the configuration repository.

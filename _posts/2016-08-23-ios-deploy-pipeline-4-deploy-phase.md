@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Creating a Build-Once iOS Deployment Pipeline: Part 4 - Deploy Phase'
-date: 2016-08-14 22:21:00.000000000 +10:00
+date: 2016-08-23 08:30:00.000000000 +10:00
 type: post
 status: draft
 categories: []
@@ -16,9 +16,9 @@ author:
   last_name: ''
 ---
 
-This is part 4 of my [Creating a Build-Once iOS Deployment Pipeline series]({% post_url 2016-08-14-ios-deploy-pipeline-1-introduction %}).
+This is part 4 of my [Creating a Build-Once iOS Deployment Pipeline series]({% post_url 2016-08-23-ios-deploy-pipeline-1-introduction %}).
 
-In [part 3]({% post_url 2016-08-14-ios-deploy-pipeline-3-setup-and-build-test-phase %}) we configured our build server agent and added build and test phases. Leaving signing out of out build and test phases kept them simple, but it leaves a lot of things to be solved during deployment.
+In [part 3]({% post_url 2016-08-23-ios-deploy-pipeline-3-setup-and-build-test-phase %}) we configured our build server agent and added build and test phases. Leaving signing out of out build and test phases kept them simple, but it leaves a lot of things to be solved during deployment.
 
 At a high level, here's what our deployment lane will look like:
 

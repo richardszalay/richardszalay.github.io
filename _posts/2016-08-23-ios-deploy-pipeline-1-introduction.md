@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 'Creating a Build-Once iOS Deployment Pipeline: Part 1 - Introduction'
-date: 2016-08-14 22:18:00.000000000 +10:00
+date: 2016-08-23 08:15:00.000000000 +10:00
 type: post
 status: draft
 categories: []
@@ -21,9 +21,9 @@ Let's get this out of the way: I'm not an iOS developer. In fact, I'm not a mobi
 The series will no doubt be wordy so, for your convenience, here's a tl;dr guide:
 
 * Part 1 - Introduction, and concept/tools primer
-* [Part 2 - Deploy pipeline design]({% post_url 2016-08-14-ios-deploy-pipeline-2-the-road-ahead %})
-* [Part 3 - Build server setup and build/test phases]({% post_url 2016-08-14-ios-deploy-pipeline-3-setup-and-build-test-phase %})
-* [Part 4 - Deploy phase]({% post_url 2016-08-14-ios-deploy-pipeline-4-deploy-phase %})
+* [Part 2 - Deploy pipeline design]({% post_url 2016-08-23-ios-deploy-pipeline-2-pipeline-architecture %})
+* [Part 3 - Build server setup and build/test phases]({% post_url 2016-08-23-ios-deploy-pipeline-3-setup-and-build-test-phase %})
+* [Part 4 - Deploy phase]({% post_url 2016-08-23-ios-deploy-pipeline-4-deploy-phase %})
 
 
 
@@ -106,4 +106,4 @@ Fastlane has been around for some time and has its own share of quirks and seemi
 
 There's also numerous other tools and plugins to do everything from talking screenshots to integration with services line HockeyApp (for beta testing) and Sentry (for error reporting).
 
-In [Part 2]({% post_url 2016-08-14-ios-deploy-pipeline-2-the-road-ahead %}) we'll design our pipeline around these technologies.
+In [Part 2]({% post_url 2016-08-23-ios-deploy-pipeline-2-pipeline-architecture %}) we'll design our pipeline around these technologies.
