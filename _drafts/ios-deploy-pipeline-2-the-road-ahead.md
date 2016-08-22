@@ -74,7 +74,7 @@ We use git, but any VCS would work.
 
 **Application Code Repository** – Contains xcproj, application code, and sufficient configuration to run on a simulator or development device.
 
-**Signing Identity Repository** – Maintained by fastlane's "match". Contains certificates, private keys, and provisioning profiles related to the team. Updated via manually executed fastlane "lanes" (tasks). We'll be setting up a task to keep this updated, but if you'd prefer to migrate your existing Signing Identities and Provisioning Profiles Michał Laskowski has a great guide over on Macoscope.
+**Signing Identity Repository** – Maintained by fastlane's "match". Contains certificates, private keys, and provisioning profiles related to the team. Updated via manually executed fastlane "lanes" (tasks). We'll be setting up a task to keep this updated, but if you'd prefer to migrate your existing Signing Identities and Provisioning Profiles [Michał Laskowski has a great guide over on Macoscope](http://macoscope.com/blog/simplify-your-life-with-fastlane-match/).
 
 **Configuration Repository** – Contains deployment scripts (fastlane) and the configuration specific to each "environment" that the app runs in, such as QA/HockeyApp or the App Store.
 
@@ -90,6 +90,6 @@ We use git, but any VCS would work.
 
 ### Secrets
 
-The deploy phase will need an Apple Developer account, to verify signing identities and deploy to iTunes. It will also need a hockeyapp api key, and access to the certificates repository.
+The deploy phase will need an Apple Developer account, to verify signing identities and deploy to iTunes. It will also need a hockeyapp api key, and access to the certificates repository. We'll be leaving these secrets to the build server to supply.
 
 In [Part 3]({% post_url 2016-08-14-ios-deploy-pipeline-3-setup-and-build-test-phase %}) we'll configure our build server and setup the build and test phases in fastlane.
