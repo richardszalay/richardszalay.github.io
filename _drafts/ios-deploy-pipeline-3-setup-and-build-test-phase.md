@@ -24,12 +24,12 @@ The build and test phases both require the application code repository and are a
  
 ## Setup 
  
-### Build Server 
+### Build Server Environment
+
 
 #### LaunchAgents vs LaunchDaemons
 
-If you are configuring a build agent, you'll probably want to configure it as either a LaunchAgent or LanuchDaemon. If you need to access the 
-Simulator for your automated tests, LaunchAgent is your only choice since LaunchDaemons can't access the UI. Since LaunchAgents only run when the user is logged in,
+If you are configuring a headless build agent, you'll probably want to configure it as either a LaunchAgent or LanuchDaemon. If you need to access the Simulator for your automated tests, LaunchAgent is your only choice since LaunchDaemons can't access the UI. Since LaunchAgents only run when the user is logged in,
 you'll probably want to configure the user to auto-login in case the server is rebooted. 
 
 Relevant Apple documentation:
