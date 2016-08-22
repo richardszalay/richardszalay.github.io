@@ -24,27 +24,27 @@ The app we'll base the rest of this series on is a basic single screen app that 
 
 ## Guiding tenants
 
+The resulting 
+
 ### Security
 
-Imagine that every developer is a freelancer, that your build agent is publically shared, and that your client's IT wants to review your security configuration.
+Since freelance developers may be involved from time to time, secrets (passwords, private keys, etc) should be kept out of the application code repository. This is basic application of the principal of least privilege.
 
-**Principle of least privilege**. Avoid accessing signing identitues and Apple portals until the deployment phase. This allows the build/test phase to be run by any developer, regardless of access.
+Also as all our builds, for various clients, run on the same build infrastructure, I'd like to avoid writing to (or relying on) the default keychain.
 
 ### Portability
 
-Imagine that your build server is going to be rebuilt from scratch everyday. Even if it's not, all servers will die eventually.
-
-**Isolation**.  Assume the build agent is shared in a public arena, so don't install (or rely on) passwords/certificates on the build agent's default keychain. Doing so makes the build less portable and opens the door to other builds being able to read your secrets.
+Servers die, different projects have different dependencies, developers change (or get new machines), and documentation gets out of date. Having a build process that self-describes (and even self-obtains) its dependencies will only save headaches down the line.
 
 ### Maintainability
 
-Imagine that all of your configuration and secrets (eg. iTunes password) change once a month. 
+Separating runtime configuration from application code allows redeployment without a rebuild.
 
-Separate deployment configuration from application code. This allows the deployment scripts and configuration to evolve independently from the application configuration code. With this design, a release can be redeployed when configuration changes, without having to wait for another application build.
-
-**Don't Repeat Yourself**. Signing Identities and Provisioning Profiles are owned by the team, not the application, so store them separately to both application code and deployment configuration. If your pipeline signs with more than one team (eg. Company Team for dev/adhoc, Client Team for app store) then you'll want one repository for each team. Everything should only have one source of truth.
+Having a single source of truth (aka Don't Repeat Yourself) for important assets means less confusion in the future, especially if the multiple copies get out of sync. 
 
 ## The Deployment Pipeline
+
+With all of that in mind, here's the high level architecture of the pipeline that I went with:
 
 <img src="{{ site.baseurl }}/assets/ios-build.png" alt="The proposed deployment pipeline" aria-describedby="ios-build-diagram-description" />
 
@@ -69,6 +69,8 @@ In the diagram above, you can see the build/test phase is very separate from the
 * There's no connection to HockeyApp / iTunes until the deploy phases
 
 ### Repositories
+
+We use git, but any VCS would work.
 
 **Application Code Repository** – Contains xcproj, application code, and sufficient configuration to run on a simulator or development device.
 
