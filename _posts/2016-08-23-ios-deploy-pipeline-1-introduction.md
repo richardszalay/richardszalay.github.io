@@ -25,7 +25,7 @@ The series will no doubt be wordy so, for your convenience, here's a tl;dr guide
 * [Part 3 - Build server setup and build/test phases]({% post_url 2016-08-23-ios-deploy-pipeline-3-setup-and-build-test-phase %})
 * [Part 4 - Deploy phase]({% post_url 2016-08-23-ios-deploy-pipeline-4-deploy-phase %})
 
-
+Finally, the series was written primarily on my phone while holding my 7-month-old, so apologies in advance for any spelling mistakes.
 
 ## Deployment Pipelines
 
