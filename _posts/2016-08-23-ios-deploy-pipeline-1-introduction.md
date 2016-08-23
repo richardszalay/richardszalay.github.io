@@ -44,7 +44,7 @@ If the above sounds like a good idea, it would make sense that there would be ex
 
 This series hopes to provide information on how to configure a pipeline that follows the tenants of a Continuous Delivery-style deployment pipeline.
 
-## What's included this series?
+## What's included in this series?
 
 This series intends to describe the tools and archictecture of a deployment pipeline that builds only once and applies configuration at deploy-time, which is useful for both white labelled applications and those with numerous target API environments or unique client "keys".
 
