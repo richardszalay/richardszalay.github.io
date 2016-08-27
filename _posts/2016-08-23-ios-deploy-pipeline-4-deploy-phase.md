@@ -141,7 +141,7 @@ SpareKeys.temp_keychain(true) { |keychain_path|
 
 > **Gotcha #8:** You can ignore this error in your logs: "There are no local code signing identities found".  We just created a fresh keychain, so its obviously empty.
 
-I personally run match here with the `readonly` flag, which prevents it from attempting to create new signing identities and provisioning profiles. Instead, I create a second lane called update_certs that is run mentally when required. Whether you should do this too depends entirely on how ok you are with your deployment processes having side effects of this kind.
+I personally run match here with the `readonly` flag, which prevents it from attempting to create new signing identities and provisioning profiles. Instead, I create a second lane called update_certs that is run manually when required. Whether you should do this too depends entirely on how ok you are with your deployment processes having side effects of this kind.
 
 > **Gotcha #9:** Match will create a provisioning if one doesn’t exist in the repository, and will do so by calling Sigh with the force flag. This will automatically add all devices to it. If your AdHoc release service can't be solely relied upon to restrict access between owners of registered devices, you might need to handle this yourself (or put your support behind [fastlane/#5667](https://github.com/fastlane/fastlane/issues/5667)).
 
