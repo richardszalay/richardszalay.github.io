@@ -45,7 +45,7 @@ In vast contrast to the build lane, deployment has a substantial number of actio
 
 A few things to note:
 
-* Match supports an option for a specific keychain, but Sigh does not. There's also no way to avoid Keychains altogether, as even actions that accept a custom keychain tend to rely on downstream functionality that does not.
+* Match supports an option for a specific keychain, but Sigh does not (**Edit:** As of fastlane 1.102, resign supports a `keychain_path` option). There's also no way to avoid Keychains altogether, as even actions that accept a custom keychain tend to rely on downstream functionality that does not.
 * Actions that use the "default keychain" actually use the first item from keychain search list, that is the result of "security list-keychains" as opposed to "security default-keychain", so there's no need to change the default/login keychains in order to customise them.
 
 I've highlighted which of the options we went with, but I'll explain the justification as we go.
