@@ -16,6 +16,8 @@ author:
   last_name: ''
 ---
 
+**2016-10-19: Updated with notes around macOS Sierra** 
+
 This is part 4 of my [Creating a Build-Once iOS Deployment Pipeline series]({% post_url 2016-08-23-ios-deploy-pipeline-1-introduction %}).
 
 In [part 3]({% post_url 2016-08-23-ios-deploy-pipeline-3-setup-and-build-test-phase %}) we configured our build server agent and added build and test phases. Leaving signing out of out build and test phases kept them simple, but it leaves a lot of things to be solved during deployment.
@@ -163,10 +165,12 @@ def match_result_provisioning_profile(app_identifier, match_type)
 end
 ```
 
+> **Gotcha #11** macOS Sierra made a change that complicates this story. It introduced the concept of key partition lists to the keychain, configured using the (as-yet undocumented) `security set-key-partition-list` command. More information can be found at this openradar bug report: [http://openradar.appspot.com/28524119](http://openradar.appspot.com/28524119). To work around this, spare_keys 1.1.1 now provides the password to the keychain as a second block argument and I've uploaded the snippet below to make use of it. 
+
 With that last quibble out of the way, we can call resign within our temp keychain scope:
 
 ```ruby
-SpareKeys.temp_keychain(true) { |keychain_path|
+SpareKeys.temp_keychain(true) { |keychain_path, keychain_password|
   match_type = "adhoc" # or "appstore"
   app_identifier = "com.richardszalay.deploydemo"
 
@@ -178,11 +182,28 @@ SpareKeys.temp_keychain(true) { |keychain_path|
     readonly: true
   )
 
+  `security set-key-partition-list -S apple-tool:,apple: -k "#{keychain_password}" #{keychain_path}` if requires_key_partition_list
+
   resign(
     ipa: "fastlane/build/DeploymentPipeline.ipa",
     provisioning_profile: match_result_provisioning_profile(app_identifier, match_type)
   )
 }
+```
+
+`requires_key_partition_list` can be defined at the bottom of your fastfile as:
+
+```ruby
+def requires_key_partition_list()
+
+  osVersion = `sysctl -n kern.osrelease`
+
+  majorOsVersion = Integer(osVersion.split('.')[0])
+
+  return majorOsVersion >= 16 # Sierra
+
+end
+
 ```
 
 And there we have it: a signed IPA, configured to a specific environment, in a fraction of the time it would have taken to rebuild it. You'll need to offset the time it took to read this wordy blog series, of course, but I'm sure you'll become net positive eventually.
@@ -221,7 +242,7 @@ deliver(
 )
 ```
 
-> **Gotcha #11:** if you remember from part one, iTunes have different team ids from the developer portal. If the account you are using to authenticate with has access to multiple iTunes teams, you'll have to specify which by setting `FASTLANE_ITC_TEAM_ID` or `FASTLANE_ITC_TEAM_NAME`. You can get the team id by running the release locally - you'll be prompted to select the correct team id. 
+> **Gotcha #12:** if you remember from part one, iTunes have different team ids from the developer portal. If the account you are using to authenticate with has access to multiple iTunes teams, you'll have to specify which by setting `FASTLANE_ITC_TEAM_ID` or `FASTLANE_ITC_TEAM_NAME`. You can get the team id by running the release locally - you'll be prompted to select the correct team id. 
 
 ### Putting it all together
 
