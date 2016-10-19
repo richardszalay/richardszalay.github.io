@@ -165,7 +165,7 @@ def match_result_provisioning_profile(app_identifier, match_type)
 end
 ```
 
-> **Gotcha #11** macOS Sierra made a change that complicates this story. It introduced the concept of key partition lists to the keychain, configured using the (as-yet undocumented) `security set-key-partition-list` command. More information can be found at this openradar bug report: [http://openradar.appspot.com/28524119](http://openradar.appspot.com/28524119). To work around this, spare_keys 1.1.1 now provides the password to the keychain as a second block argument and I've uploaded the snippet below to make use of it. 
+> **Gotcha #11** macOS Sierra made a change that complicates this story. It introduced the concept of key partition lists to the keychain, configured using the (as-yet undocumented) `security set-key-partition-list` command. More information can be found at this openradar bug report: [http://openradar.appspot.com/28524119](http://openradar.appspot.com/28524119). If the correct key partition lists aren't applied to imported identities, the user will still be prompted to allow access to the keychain even if it was unlocked. To makes things worse, the command requires the keychain password, even if it's already unlocked. To work around this, spare_keys 1.1.1 now provides the password to the keychain as a second block argument and I've uploaded the snippet below to make use of it. 
 
 With that last quibble out of the way, we can call resign within our temp keychain scope:
 
