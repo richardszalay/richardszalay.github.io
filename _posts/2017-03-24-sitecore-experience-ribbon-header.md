@@ -51,7 +51,7 @@ First, let's create our script that will be run by the pipeline. Since there are
 
 Next we need to create a new `PipelineProcessor` item named `PositionFixedNavBar` in Sitecore's core database under `/sitecore/client/Applications/ExperienceEditor/Pipelines/InitializePageEdit`. The `ProcessorFile` field should be set to an absolute path to the javascript file (eg. "/assets/js/PositionFixedNavBar.js").
 
-Now, when we load the experience editor the nav is always positioned under the ribbon and the code involved isn't present in CD environments!
+Now, when we load the experience editor the nav is always positioned below the ribbon and the code involved isn't present in CD environments!
 
 <img src="{{ site.baseurl }}/assets/sc-exp-h-normal-right.png" alt="Sample header" />
 
