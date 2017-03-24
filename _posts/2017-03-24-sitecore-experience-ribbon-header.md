@@ -41,7 +41,7 @@ However, because `position: fixed` elements are positioned based on absolute coo
 
 ## Client pipelines to the rescue
 
-We could simply include Experience Editor-aware javascript in our application, but that feels like a code smell. Specifically, it's a violation of separation of concerns and it exposes the fact that our system is based on Sitecore. 
+We could simply include Experience Editor-aware javascript in our application code, but that feels like a code smell. Specifically, it's a violation of separation of concerns and it exposes the fact that our system is based on Sitecore. 
 
 Luckily, there is a "Sitecore approved" way of solving this type of problem and that is via "client pipelines". Client pipelines work similarly to Sitecore's server side pipelines but are written in JavaScript. In our case, we want to integrate with the "InitializePageEdit" pipeline as that runs when the Experience Editor UI starts up.
 
