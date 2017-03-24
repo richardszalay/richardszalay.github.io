@@ -45,7 +45,7 @@ We could simply include Experience Editor-aware javascript in our application co
 
 Luckily, there is a "Sitecore approved" way of solving this type of problem and that is via "client pipelines". Client pipelines work similarly to Sitecore's server side pipelines but are written in JavaScript. In our case, we want to integrate with the "InitializePageEdit" pipeline as that runs when the Experience Editor UI starts up.
 
-First, let's create our script that will be run by the pipeline. Since there are no events fired when the ribbon is resized, we'll use MutationObserver to be informed when the div's style attribute changes. MutationObserver is supported in the latest browsers and IE11, but there's at least one [polyfill](https://github.com/Polymer/MutationObservers) that brings support to IE9 and above.
+First, let's create our script that will be run by the pipeline. Since there are no events fired when the ribbon is resized, we'll use [MutationObserver](https://developer.mozilla.org/en/docs/Web/API/MutationObserver) to be informed when the div's style attribute changes. MutationObserver is [supported in the latest browsers and IE11](http://caniuse.com/#feat=mutationobserver), but there's at least one [polyfill](https://github.com/Polymer/MutationObservers) that brings support to IE9 and above.
 
 {% gist f8fe2c90f21132ad7fb7d26d71c1faf3 PositionFixedNavBar.js %}
 
