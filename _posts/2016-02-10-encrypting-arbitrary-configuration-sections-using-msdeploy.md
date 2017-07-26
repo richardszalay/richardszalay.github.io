@@ -19,23 +19,24 @@ To workaround this, we can use the `runCommand` provider to invoke "aspnet_regii
 
 {% highlight shell %}
 msdeploy.exe -postSync:runCommand="c:\windows\Microsoft.NET\Framework64\v4.0.30319\aspnet_regiis.exe 
-	-pd system.net/mailSettings/smtp 
+	-pe system.net/mailSettings/smtp 
 	-site awesomesite.com 
-	-app /"
+	-app /
+	-prov YourKeyProvider"
 {% endhighlight %}
 
-This leaves us with a problem: non-administrator deploy users don't have sufficient permission to encrypt configuration sections. And we're 
-all using non-administrator deploy users, right?
+This leaves us with a problem: non-administrator deploy users don't have sufficient permission to encrypt configuration sections. And we're all using non-administrator deploy users, right?
 
 ### Configuring non-administrator deployments
 
 Assuming non-administrator deployments are already configured, the following changes will allow the user to encrypt configuration sections:
 
+1. Grant the deplopy user access to the encryption key: `aspnet_regiis -pa YourKeyProvider your_webdeploy_user`
 1. Create a delegation rule to allow the deploy user to invoke aspnet_regiis.exe
     1. In IIS Manager, go to "Management service Delegation"
     2. Create a new, blank rule with the following settings:
         * **Provider**: runCommand
         * **User**: CurrentUser
         * **RegularExpression**: aspnet_regiis.exe
-2. Grant the deploy user read access to %windir%\system32\inetsrv\config (ignore the errors)
+2. Grant the deploy user read access to %windir%\system32\inetsrv\config (ignore the errors on the sub-folders)
 3. Add the deploy user to the "Replace a process level token" group policy (Group Policy :: Local Policies :: User Rights Assignment)
