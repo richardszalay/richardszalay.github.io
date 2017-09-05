@@ -1,7 +1,8 @@
 ---
 layout: post
 title: "Upgrading Buggy Bits to .NET Core - Part 1: The Code"
-date: 2017-09-25 21:55:12.000000000 +11:00
+date: 2017-09-05 21:55:12.000000000 +11:00
+redirect_from: "/2017/09/25/buggy-bits-core-part-1/"
 type: post
 published: true
 status: publish
