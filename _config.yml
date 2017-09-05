@@ -17,8 +17,6 @@ github_username:  richardszalay
 
 gems:
   - jekyll-gist
-
-plugins:
   - jekyll-redirect-from
 
 gist:
