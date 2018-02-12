@@ -80,7 +80,7 @@ A **Provisioning Profile** provides a way of approving "how" a signed app is use
 
 Contrasted to the ecosystem, the build tools are relatively straight forward and all ship either with XCode or as CLI Tools.
 
-**xcode-select** allows you to change the default ("system") location of Xcode for command line usage. Using this tool requires sudo access, but setting the DEVELOPER_DIR environment variable is a non-Audi alternative that has the same effect.
+**xcode-select** allows you to change the default ("system") location of Xcode for command line usage. Using this tool requires sudo access, but setting the DEVELOPER_DIR environment variable is a non-sudo alternative that has the same effect.
 
 **xcodebuild** builds, and optionally signs, an xcproj/xcworkspace and archives it into an xcarchive package directory.
 
@@ -98,7 +98,7 @@ Fastlane has been around for some time and has its own share of quirks and seemi
 
 **Cert** accesses and validates signing identities in the Developer Portal and stores them in your local keychain, creating a new one if required. 
 
-**Sigh** functions similarly Cert but for provisioning profiles. It also includes a tool for resigning an existing ipa with a different signing identity / provisioning profile.
+**Sigh** functions similarly to Cert but for provisioning profiles. It also includes a tool for resigning an existing ipa with a different signing identity / provisioning profile.
 
 **Match** is the newer, and recommend, alternative to both Cert and Sigh. Instead of using the Developer Portal as the source of truth for signing identitues and provisioning profiles, it uses a git repository. The thinking behind the process is outlined at https://codesigning.guide/. Sigh and Cert can both still be useful for advanced scenarios, but most of the time you won't need them.
 
