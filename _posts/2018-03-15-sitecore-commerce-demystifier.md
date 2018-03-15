@@ -60,6 +60,6 @@ That's it! The next time you see an exception in your log, it will look somethin
    at async Task&lt;object> Sitecore.Framework.Pipelines.ReflectionPipelineBlockRunner.InvokeBlock(IPipelineBlock block, IPipelineExecutionContext context, object current)
    --- End of inner exception stack trace ---
    at async Task&lt;object> Sitecore.Framework.Pipelines.ReflectionPipelineBlockRunner.InvokeBlock(IPipelineBlock block, IPipelineExecutionContext context, object current)
-   at async Task<TOutput> Sitecore.Framework.Pipelines.BasePipelineBlockRunner.Run<TOutput>(string name, object input, IPipelineExecutionContext context)</pre></code>
+   at async TaskTOutput> Sitecore.Framework.Pipelines.BasePipelineBlockRunner.RunTOutput>(string name, object input, IPipelineExecutionContext context)</pre></code>
 
 
