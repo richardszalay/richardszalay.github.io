@@ -1,6 +1,16 @@
 ---
 layout: post
-title: Adding custom facetable attributes to products in Sitecore Commerce 9
+title: 'Adding custom facetable attributes to products in Sitecore Commerce 9'
+type: post
+tags:
+- sitecore
+- experience-commerce-9
+author:
+  login: richardszalay
+  email: richard@richardszalay.com
+  display_name: Richard Szalay
+  first_name: ''
+  last_name: ''
 ---
 
 In this post, I'm going to walk through the steps involved in exposing custom data on a SellableItem as a facet (as displayed on the Storefront's category page).
