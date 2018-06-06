@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Continuous local deployments for Sitecore Commerce Engine"
+title: 'Continuous local deployments for Sitecore Commerce Engine'
 date: 2018-02-21 07:00:16.000000000 +11:00
 type: post
 published: true
