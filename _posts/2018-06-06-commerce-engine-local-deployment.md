@@ -40,7 +40,6 @@ To start off, we'll create a publish profile using the `FileSystem` publish meth
     <UsePowerShell>True</UsePowerShell>
     <publishUrl>C:\inetpub\wwwroot\CommerceOps_Sc9</publishUrl>
     <DeleteExistingFiles>False</DeleteExistingFiles>
-    <EnableMSDeployAppOffline>true</EnableMSDeployAppOffline>
   </PropertyGroup>
 </Project>
 ```
@@ -83,6 +82,7 @@ In our scenario, we'll need four separate app_offline files (one for each site),
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <!-- Takes the engine offline so we can override it's assemblies -->
   <ItemGroup>
+    <CommerceEngineNodes Include="C:\inetpub\wwwroot\CommerceOps_Sc9" />
     <CommerceEngineNodes Include="C:\inetpub\wwwroot\CommerceAuthoring_Sc9" />
     <CommerceEngineNodes Include="C:\inetpub\wwwroot\CommerceMinions_Sc9" />
     <CommerceEngineNodes Include="C:\inetpub\wwwroot\CommerceShops_Sc9" />
@@ -97,8 +97,6 @@ In our scenario, we'll need four separate app_offline files (one for each site),
   </Target>
 </Project>
 ```
-
-(The Ops role is the target of the deployment, so the use of `EnableMSDeployAppOffline` means we don't need to create an `app_offline.html` file there explicitly)
 
 ## Configure continuous deployment
 
