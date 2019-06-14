@@ -38,7 +38,7 @@ AllowOptimize=0
 
 Assembly shadow copying can feature can be temporarily disabled by setting `system.web/hostingEnvironment/@shadowCopyBinAssemblies` to `false`
 
-Making the changes above (and reverting them afterwards) is busy work that you'll unlikely be wanting to do when debugging a problem, so I've automated the process into a simple PowerShell module (gist)
+Making the changes above (and reverting them afterwards) is busy work that you'll unlikely be wanting to do when debugging a problem, so I've automated the process into a simple PowerShell module ([gist](https://gist.github.com/richardszalay/59664cd302e66511618f51eaaa77db26))
 
 ```PowerShell
 Import-Module .\Downloads\IISAssemblyDebugging.psm1
