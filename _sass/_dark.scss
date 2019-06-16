@@ -1,0 +1,39 @@
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #131414;
+        color: #bebebe;
+    }
+
+    .site-title, .site-title:visited {
+        color: #bebebe;
+    }
+
+    .post-title, .post-title:visited {
+        color: #bebebe;
+    }
+
+    code {
+        color: #111;
+    }
+
+    a {
+        color : #4086e0;
+    }
+
+    a:visited {
+        color : #2a77db;
+    }
+
+    a:hover {
+        color: #5791dc;
+    }
+
+    .highlighter-rouge .highlight, pre, code {
+        background-color: #bcbccd;
+    }
+
+    .discovery-col-header h2, .discovery-post .meta, .discovery-post .top-comment .user {
+        color: rgb(54, 76, 90);
+    }
+   
+}
