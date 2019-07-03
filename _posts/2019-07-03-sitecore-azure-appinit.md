@@ -33,6 +33,7 @@ Things to be aware of when using Application Initialization:
 
 * Make sure your warmup calls can actually reach the target Sitecore "site" using specific hostName and/or URL rewrite rules
 * Prevent caching of unintended absolute URLs (eg. "http://localhost") by using relative URLs or setting the `targetHostname` and `scheme` properties on the target site
+* Make sure your application can warm up (including app init URLs) in under 10 minutes
 
 # Overview
 
@@ -56,22 +57,23 @@ It does __not__ prevent requests from being sent to an instance in the following
 
 # Sitecore integration
 
-There are three nuances of the modules behaviour that can :
+There are a number of things to be aware of when using Application Initialization with Sitecore:
 
-* _Any_ response from an initialization URL is sufficient, even 302 (Redirect) or 500 (Error)
-* All app initialization requests are sent using "localhost" unless configured otherwise
-* All app initialization requests are sent using HTTP (ie. not HTTPS)
+1. _Any_ response from an initialization URL is sufficient, even 302 (Redirect) or 500 (Error)
+2. All app initialization requests are sent using "localhost" unless configured otherwise
+3. All app initialization requests are sent using HTTP (ie. not HTTPS)
+4. The instance will be torn down if the application doesn't restart in 10 minute (30 in some circumstances)
 
 If not planned for, these nuances can result in instances receiving traffic too early because all of the requests resulted in not-found errors or redirects without actually warming anything up.
 
-Let's look at the second two issues and how you can work around them.
+Let's look at these issues and how you can work around them.
 
 ## Localhost
 
-Assuming your target site isn't configured to match `localhost`, the request will likely result in a 404 (or a 302 to the Not Found page). You can work around this in one of two ways:
+Assuming your target site isn't configured to match `localhost`, the request will likely result in a 404 (or a 302 to the Not Found page). There are a number of things to consider when fixing that:
 
-1. Whether to configure the target site on each initialization URL, or 'globally' via URL Rewrite
-2. Whether to rewrite the host header or override specify the site via `sc_site`
+1. Whether to target the site via the host header or override the site via `?sc_site`
+2. Whether to configure the target site on each initialization URL, or 'globally' via URL Rewrite
 
 My personal preference is to rewrite `?sc_site`, since it's portable between environments, using either Rewrite rule if there's only one target site, or on each warmup URL if there are multiple sites being.
 
@@ -144,3 +146,12 @@ If you have any cached renderings that use absolute links and you use `AlwaysInc
 
 * `targetHostname`
 * `scheme` (if using https)
+
+## Time limit
+
+Finally, the application has 10 minutes to complete warmup before the VM is shut down. This might be as long as 30 minutes, but as it's not reliable it's best to aim for 10 minutes.
+
+I won't cover startup optimisation as it's a large topic on its own, but here's two easy things that can help:
+
+* Ensure the site is configured to use Roslyn ([Microsoft.CodeDom.Providers.DotNetCompilerPlatform](https://www.nuget.org/packages/Microsoft.CodeDom.Providers.DotNetCompilerPlatform)) as the cshtml compiler rather than the default. **I've seen startup time drop by 3-4 minutes doing this**
+* Precompile views (for example, using [RazorGenerator.MsBuild](https://github.com/RazorGenerator/RazorGenerator/wiki/Using-RazorGenerator.MsBuild)) and [registering the assembly with Sitecore](https://kamsar.net/index.php/2016/09/Precompiled-Views-with-Sitecore-8-2/). Should should drop another 30-120 seconds from the startup time.
