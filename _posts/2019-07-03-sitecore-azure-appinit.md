@@ -64,7 +64,9 @@ There are a number of things to be aware of when using Application Initializatio
 3. All app initialization requests are sent using HTTP (ie. not HTTPS)
 4. The instance will be torn down if the application doesn't restart in 10 minute (30 in some circumstances)
 
-If not planned for, these nuances can result in instances receiving traffic too early because all of the requests resulted in not-found errors or redirects without actually warming anything up.
+If not planned for, these nuances can result in instances receiving traffic too early because all of the requests resulted in not-found errors or redirects without actually warming anything up. 
+
+(Once receiving traffic, external requests will time out after 230 seconds and return a 502 status code. If you're seeing this, it's likely that your initialization URLs aren't executing properly.)
 
 Let's look at these issues and how you can work around them.
 
