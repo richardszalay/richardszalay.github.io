@@ -153,7 +153,29 @@ If you have any cached renderings that use absolute links and you use `AlwaysInc
 
 Finally, the application has 10 minutes to complete warmup before the VM is shut down. This might be as long as 30 minutes, but as it's not reliable it's best to aim for 10 minutes.
 
+Individual warmup requests do not have a timeout applied so you can use them to "wait" for certain background processes to complete, if required.
+
 I won't cover startup optimisation as it's a large topic on its own, but here's two easy things that can help:
 
 * Ensure the site is configured to use Roslyn ([Microsoft.CodeDom.Providers.DotNetCompilerPlatform](https://www.nuget.org/packages/Microsoft.CodeDom.Providers.DotNetCompilerPlatform)) as the cshtml compiler rather than the default. **I've seen startup time drop by 3-4 minutes doing this**
 * Precompile views (for example, using [RazorGenerator.MsBuild](https://github.com/RazorGenerator/RazorGenerator/wiki/Using-RazorGenerator.MsBuild)) and [registering the assembly with Sitecore](https://kamsar.net/index.php/2016/09/Precompiled-Views-with-Sitecore-8-2/). Should should drop another 30-120 seconds from the startup time.
+
+# Debugging Warm-Up Requests
+
+Warm-up requests sent by the Application Initialization module don't appear in the IIS logs. They will be logged by Failed Request Tracing, but there's also no way to filter this logging specifically for warmup requests.
+
+One strategy is to create a dummary page that you can send 'marker' requests to:
+
+```
+<applicationInitialization>
+  <add initializationPage="/Init.aspx?phase=home" />
+  <add initializationPage="/?sc_site=awesome" />
+
+  <add initializationPage="/Init.aspx?phase=landing" />
+  <add initializationPage="/first?sc_site=awesome" />
+  <add initializationPage="/second?sc_site=awesome" />
+  <add initializationPage="/third?sc_site=awesome" />
+</applicationInitialization>
+```
+
+This allows you to filter Failed Request Tracing to this page and you can review the logs to compare timestamps. If there is little to no time between marker requests, there's probably errors occuring for the intervening requests.
