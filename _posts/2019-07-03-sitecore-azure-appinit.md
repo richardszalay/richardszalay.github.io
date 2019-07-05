@@ -164,7 +164,7 @@ I won't cover startup optimisation as it's a large topic on its own, but here's 
 
 Warm-up requests sent by the Application Initialization module don't appear in the IIS logs. They will be logged by Failed Request Tracing, but there's also no way to filter this logging specifically for warmup requests.
 
-One strategy is to create a dummary page that you can send 'marker' requests to:
+One strategy is to create a dummy page that you can send 'marker' requests to:
 
 ```
 <applicationInitialization>
