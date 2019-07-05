@@ -160,7 +160,7 @@ I won't cover startup optimisation as it's a large topic on its own, but here's 
 * Ensure the site is configured to use Roslyn ([Microsoft.CodeDom.Providers.DotNetCompilerPlatform](https://www.nuget.org/packages/Microsoft.CodeDom.Providers.DotNetCompilerPlatform)) as the cshtml compiler rather than the default. **I've seen startup time drop by 3-4 minutes doing this**
 * Precompile views (for example, using [RazorGenerator.MsBuild](https://github.com/RazorGenerator/RazorGenerator/wiki/Using-RazorGenerator.MsBuild)) and [registering the assembly with Sitecore](https://kamsar.net/index.php/2016/09/Precompiled-Views-with-Sitecore-8-2/). Should should drop another 30-120 seconds from the startup time.
 
-# Debugging Warm-Up Requests
+## Debugging Warm-Up Requests
 
 Warm-up requests sent by the Application Initialization module don't appear in the IIS logs. They will be logged by Failed Request Tracing, but there's also no way to filter this logging specifically for warmup requests.
 
