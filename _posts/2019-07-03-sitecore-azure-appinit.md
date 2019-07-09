@@ -107,7 +107,8 @@ Remember that rules are processed in order, so this will need to be first.
   <rule name="Change warmup site" stopProcessing="true">
     <match url="(.*)" />
     <conditions>
-      <add input="{APP_WARMING_UP}" pattern="1" />
+      <add input="{HTTP_USER_AGENT}" pattern="^IIS Application Initialization Warmup$" />
+      <add input="{REMOTE_ADDR}" pattern="^127\.0\.0\.\d+$" />
     </conditions>
     <action type="Rewrite" url="{R:0}?sc_site=veryexcellent" appendQueryString="true" />
   </rule>
@@ -116,7 +117,8 @@ Remember that rules are processed in order, so this will need to be first.
   <rule name="Change warmup host" stopProcessing="true">
     <match url=".*" />
     <conditions>
-      <add input="{APP_WARMING_UP}" pattern="1" />
+      <add input="{HTTP_USER_AGENT}" pattern="^IIS Application Initialization Warmup$" />
+      <add input="{REMOTE_ADDR}" pattern="^127\.0\.0\.\d+$" />
     </conditions>
     <serverVariables>
       <set name="HTTP_HOST" value="veryexcellentsite.com" />
@@ -136,7 +138,8 @@ NOTE: If you're using a rule to apply the site/host, you can simply set `stopPro
 <rule name="No HTTP->HTTPS" stopProcessing="true">
   <match url=".*" />
     <conditions>
-      <add input="{APP_WARMING_UP}" pattern="1" />
+      <add input="{HTTP_USER_AGENT}" pattern="^IIS Application Initialization Warmup$" />
+      <add input="{REMOTE_ADDR}" pattern="^127\.0\.0\.\d+$" />
     </conditions>
   <action type="None" />
 </rule>
@@ -179,3 +182,8 @@ One strategy is to create a dummy page that you can send 'marker' requests to:
 ```
 
 This allows you to filter Failed Request Tracing to this page and you can review the logs to compare timestamps. If there is little to no time between marker requests, there's probably errors occuring for the intervening requests.
+
+You can also identify requests made by/during warmup:
+
+1. Warmup requests will have a user agent of `IIS Application Initialization Warmup`
+2. Regular/external requests made while warmup is in progress will have a `APP_WARMING_UP` server variable set to `1`
